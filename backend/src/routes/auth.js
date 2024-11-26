@@ -1,12 +1,8 @@
 const express = require("express");
-const {
-  registerUser /*, loginUser, getUserProfile*/,
-} = require("../controllers/authController");
-const authMiddleware = require("../middlewares/authMiddleware");
 const router = express.Router();
+const { register } = require("../controllers/authController");
 
-router.post("/register", registerUser);
-// router.post('/login', loginUser);
-// router.get('/profile', authMiddleware, getUserProfile);
+// ユーザー登録エンドポイント
+router.post("/register", register);
 
 module.exports = router;
