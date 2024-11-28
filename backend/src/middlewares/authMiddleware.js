@@ -1,3 +1,5 @@
+// 共通処理（認証やエラーハンドリング）
+
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {

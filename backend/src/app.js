@@ -1,3 +1,5 @@
+// エントリーポイント
+
 const express = require("express");
 const authRoutes = require("./routes/auth");
 const cors = require("cors");

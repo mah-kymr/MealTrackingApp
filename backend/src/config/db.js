@@ -1,3 +1,5 @@
+// 設定関連（DB接続や環境変数）
+
 require("dotenv").config(); // dotenvで環境変数を読み込む
 const { Pool } = require("pg"); // pgモジュールをインポート
 

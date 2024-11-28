@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { register } = require("../controllers/authController");
+const { register } = require("../../controllers/v1/authController");
 
 // ユーザー登録エンドポイント
 router.post("/register", register);
