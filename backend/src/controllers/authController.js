@@ -1,5 +1,6 @@
+// 認証関連のロジック
 const bcrypt = require("bcrypt");
-const pool = require("../../config/db"); // DB接続設定をインポート
+const pool = require("../config/db"); // DB接続設定をインポート
 
 // ユーザー登録関数
 const register = async (req, res) => {
