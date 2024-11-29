@@ -1,13 +1,14 @@
 // エントリーポイント
 
 const express = require("express");
-const authRoutes = require("./routes/v1/auth.js");
+const authRoutes = require("./routes/v1/auth.js"); // 認証関連のルート
 const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
 
 app.use(cors()); // インストールが必要: npm install cors
+app.use(express.json()); // JSONリクエストを解析するミドルウェア
 
 // リクエストログのミドルウェア
 app.use((req, res, next) => {
@@ -24,9 +25,6 @@ app.use((req, res, next) => {
   });
   next();
 });
-
-// JSONリクエストを解析するミドルウェア
-app.use(express.json());
 
 // テスト用のシンプルなGETエンドポイント
 // app.get("/test", (req, res) => {
