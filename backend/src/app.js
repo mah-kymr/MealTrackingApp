@@ -1,7 +1,7 @@
 // エントリーポイント
 
 const express = require("express");
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/v1/auth.js");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -29,8 +29,16 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // テスト用のシンプルなGETエンドポイント
-app.get("/test", (req, res) => {
-  res.json({ message: "Server is working!" });
+// app.get("/test", (req, res) => {
+//   res.json({ message: "Server is working!" });
+// });
+
+// ルートパスへのGETリクエストに対するハンドラー
+app.get("/", (req, res) => {
+  res.json({
+    message: "Welcome to the Meal Tracking App API",
+    status: "running",
+  });
 });
 
 // 認証関連のルートを登録
