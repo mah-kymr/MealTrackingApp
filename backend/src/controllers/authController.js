@@ -56,10 +56,9 @@ const login = async (req, res) => {
 
   try {
     // データベースからユーザーを取得
-    const result = await pool.query(
-      "SELECT * FROM users WHERE username = $1",
-      [username]
-    );
+    const result = await pool.query("SELECT * FROM users WHERE username = $1", [
+      username,
+    ]);
 
     if (result.rows.length === 0) {
       return res.status(401).json({ error: "Invalid username or password" });
@@ -91,4 +90,9 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const logout = (req, res) => {
+  res.clearCookie("token"); // Cookieに保存していたトークンを削除
+  res.status(200).json({ message: "Logged out successfully" });
+};
+
+module.exports = { register, login, logout };

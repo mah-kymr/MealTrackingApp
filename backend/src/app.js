@@ -1,7 +1,7 @@
 // エントリーポイント
 
 const express = require("express");
-const authRoutes = require("./routes/v1/auth.js"); // 認証関連のルート
+const authRoutes = require("./routes/v1/auth"); // 認証関連のルート
 const cors = require("cors");
 require("dotenv").config();
 
@@ -25,11 +25,6 @@ app.use((req, res, next) => {
   });
   next();
 });
-
-// テスト用のシンプルなGETエンドポイント
-// app.get("/test", (req, res) => {
-//   res.json({ message: "Server is working!" });
-// });
 
 // ルートパスへのGETリクエストに対するハンドラー
 app.get("/", (req, res) => {
