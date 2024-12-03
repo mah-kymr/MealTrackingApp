@@ -21,12 +21,13 @@ const LoginPage = () => {
       // ログイン成功時、トークンをローカルストレージに保存
       localStorage.setItem("token", data.token);
 
-      // ダッシュボードページにリダイレクト
+      // 成功時にリダイレクト
       window.location.href = "/DashboardPage";
     } catch (err) {
-      // エラーメッセージをセットしてローディング状態を解除
+      // エラーが発生した場合の処理
       setError(err.message);
-      setIsLoading(false);
+    } finally {
+      setIsLoading(false); // ローディング状態を解除
     }
   };
 

@@ -1,18 +1,26 @@
 const API_BASE_URL = "http://localhost:3000/api";
 
 export const login = async (username, password) => {
-  const response = await fetch(`http://localhost:3000/api/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ username, password }),
-  });
+  try {
+    const response = await fetch(`http://localhost:3000/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
 
-  const data = await response.json();
+    // レスポンスがOKでない場合、エラーを投げる
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-  if (!response.ok) {
-    throw new Error("ログインに失敗しました");
+    // レスポンスをJSONとしてパース
+    const data = await response.json();
+
+    return data; // data.tokenなどを返す
+  } catch (error) {
+    console.error("Error during login:", error);
+    throw error;
   }
-  return data();
 };
