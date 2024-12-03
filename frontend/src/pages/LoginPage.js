@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 // ReactからuseStateフックをインポートすることで、関数コンポーネント内で状態管理を可能にする
+import { login } from "../services/auth"; // login関数をインポート
 
 const LoginPage = () => {
   // ユーザー名、パスワード、エラーメッセージ、ローディング状態を管理するためのステートを定義
@@ -15,24 +16,7 @@ const LoginPage = () => {
     setIsLoading(true); // ローディング状態を開始
 
     try {
-      // サーバーにPOSTリクエストを送信
-      const response = await fetch("http://localhost:3000/api/auth/login", {
-        method: "POST", // HTTPメソッド
-        headers: {
-          "Content-Type": "application/json", // リクエストヘッダー（JSON形式を指定）
-        },
-        body: JSON.stringify({
-          username, // フォームから取得したユーザー名
-          password, // フォームから取得したパスワード
-        }),
-      });
-
-      const data = await response.json(); // レスポンスをJSON形式でパース
-
-      if (!response.ok) {
-        // サーバーがエラーを返した場合
-        throw new Error(data.error || "ログインに失敗しました"); // エラーをスロー
-      }
+      const data = await login(username, password); // login関数を使用
 
       // ログイン成功時、トークンをローカルストレージに保存
       localStorage.setItem("token", data.token);

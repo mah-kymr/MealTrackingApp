@@ -13,7 +13,7 @@ router.post("/register", register);
 router.post("/login", login);
 
 // ログアウトエンドポイント
-router.post("logout", logout);
+router.post("/logout", logout);
 
 // 認証が必要なユーザープロファイルエンドポイント
 router.get("/profile", authMiddleware, (req, res) => {

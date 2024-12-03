@@ -7,8 +7,17 @@ require("dotenv").config();
 
 const app = express();
 
-app.use(cors()); // インストールが必要: npm install cors
-app.use(express.json()); // JSONリクエストを解析するミドルウェア
+// CORSを有効にする
+app.use(
+  cors({
+    origin: "http://localhost:3001", // フロントエンドのURLを指定
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
+
+// JSONリクエストを解析するミドルウェア
+app.use(express.json());
 
 // リクエストログのミドルウェア
 app.use((req, res, next) => {
@@ -46,6 +55,7 @@ app.use((err, req, res, next) => {
   });
 });
 
+// その他の設定（ルーティングなど）
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on http://localhost:${PORT}`);

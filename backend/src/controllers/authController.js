@@ -45,6 +45,8 @@ const register = async (req, res) => {
 
 // ログイン関数
 const login = async (req, res) => {
+  console.log("Login request body:", req.body); // デバッグ用ログ
+
   const { username, password } = req.body;
 
   // 必須フィールドのチェック
