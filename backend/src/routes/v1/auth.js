@@ -17,11 +17,19 @@ router.post("/logout", logout);
 
 // 認証が必要なユーザープロファイルエンドポイント
 router.get("/profile", authMiddleware, (req, res) => {
-  res.json({
-    user_id: req.user.user_id, // JWTでデコードされたユーザー情報
-    username: req.user.username,
-    message: "User profile fetched successfully",
-  });
+  try {
+    res.status(200).json({
+      user_id: req.user.user_id, // JWTでデコードされたユーザー情報
+      username: req.user.username,
+      message: "User profile fetched successfully",
+    });
+  } catch (error) {
+    // エラー時も適切なJSONレスポンスを返す
+    res.status(500).json({
+      error: "Internal Server Error",
+      message: error.message,
+    });
+  }
 });
 
 module.exports = router;

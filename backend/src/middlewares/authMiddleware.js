@@ -1,3 +1,4 @@
+// backend/src/middlewares/authMiddleware.js
 // 共通処理（認証やエラーハンドリング）
 
 const jwt = require("jsonwebtoken");

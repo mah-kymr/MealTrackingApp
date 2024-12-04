@@ -7,14 +7,13 @@ require("dotenv").config();
 
 const app = express();
 
-// CORSを有効にする
-app.use(
-  cors({
-    origin: "http://localhost:3001", // フロントエンドのURLを指定
-    methods: ["GET", "POST"],
-    credentials: true,
-  })
-);
+// アクセス許可するオリジンを設定
+const corsOptions = {
+  origin: "http://localhost:3001", // フロントエンドのURL
+  methods: "GET,POST",
+  allowedHeaders: "Content-Type,Authorization",
+};
+app.use(cors(corsOptions));
 
 // JSONリクエストを解析するミドルウェア
 app.use(express.json());
@@ -44,7 +43,7 @@ app.get("/", (req, res) => {
 });
 
 // 認証関連のルートを登録
-app.use("/api/auth", authRoutes);
+app.use("/api/v1/auth", authRoutes);
 
 // エラーハンドリングミドルウェア
 app.use((err, req, res, next) => {
