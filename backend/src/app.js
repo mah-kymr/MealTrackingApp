@@ -1,29 +1,35 @@
-// エントリーポイント
+// backend/src/app.js
+// Expressを使用したAPIアプリケーションのエントリーポイント
 
+// 必要な外部モジュールとルートをインポート
 const express = require("express");
-const authRoutes = require("./routes/v1/auth"); // 認証関連のルート
+const authRoutes = require("./routes/v1/auth"); // 認証関連のルートをインポート
 const cors = require("cors");
-require("dotenv").config();
+require("dotenv").config(); // 環境変数を読み込む
 
+// Expressアプリケーションのインスタンスを作成
 const app = express();
 
-// アクセス許可するオリジンを設定
+// CORSの設定: クロスオリジンリソース共有の設定
+// フロントエンドからのリクエストを許可するための設定
 const corsOptions = {
   origin: "http://localhost:3001", // フロントエンドのURL
-  methods: "GET,POST",
-  allowedHeaders: "Content-Type,Authorization",
+  methods: "GET,POST", // 許可するHTTPメソッド
+  allowedHeaders: "Content-Type,Authorization", // 許可するヘッダー
 };
 app.use(cors(corsOptions));
 
 // JSONリクエストを解析するミドルウェア
+// クライアントからのJSONデータを自動的にパースする
 app.use(express.json());
 
-// リクエストログのミドルウェア
+// リクエストログのミドルウェア: 基本的なリクエスト情報をコンソールに出力
 app.use((req, res, next) => {
   console.log(`Received ${req.method} request to ${req.path}`);
   next();
 });
 
+// 詳細なリクエストログのミドルウェア: リクエストの詳細な情報をログ出力
 app.use((req, res, next) => {
   console.log("Request received:", {
     method: req.method,
@@ -34,7 +40,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// ルートパスへのGETリクエストに対するハンドラー
+// ルートパス（/）へのGETリクエストに対するハンドラー
+// APIの基本情報とステータスを返す
 app.get("/", (req, res) => {
   res.json({
     message: "Welcome to the Meal Tracking App API",
@@ -42,10 +49,11 @@ app.get("/", (req, res) => {
   });
 });
 
-// 認証関連のルートを登録
+// 認証関連のルートを'/api/v1/auth'パスに登録
 app.use("/api/v1/auth", authRoutes);
 
-// エラーハンドリングミドルウェア
+// グローバルエラーハンドリングミドルウェア
+// キャッチされなかったエラーを処理し、適切なエラーレスポンスを返す
 app.use((err, req, res, next) => {
   console.error("Unhandled Error:", err);
   res.status(500).json({
@@ -54,8 +62,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-// その他の設定（ルーティングなど）
+// サーバーの起動設定
+// 環境変数からポート番号を取得、デフォルトは3000
 const PORT = process.env.PORT || 3000;
+
+// サーバーを指定のポートとIPアドレスで起動
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   console.log("Server is also accessible on all network interfaces");
