@@ -46,3 +46,35 @@ export const login = async (username, password) => {
     throw error;
   }
 };
+
+export const register = async (username, password) => {
+  try {
+    // ユーザー登録エンドポイントにリクエストを送信
+    const response = await fetch(`/api/v1/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    // レスポンスのステータスが成功（200-299）でない場合、エラーを投げる
+    if (!response.ok) {
+      // エラーレスポンスからエラーメッセージを取得
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    // レスポンスをJSONとしてパース
+    const data = await response.json();
+
+    // パースされたデータを返す（通常はトークンや認証情報）
+    return data; // data.tokenなどを返す
+  } catch (error) {
+    // エラーをコンソールに出力
+    console.error("Error during registration:", error);
+
+    // エラーを呼び出し元に再スロー
+    throw error;
+  }
+};

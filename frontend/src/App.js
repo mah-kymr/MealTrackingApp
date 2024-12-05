@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // アプリケーションの各ページコンポーネントをインポート
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import CompletePage from "./pages/CompletePage";
 import DashboardPage from "./pages/DashboardPage";
 
 // メインのAppコンポーネントを定義
@@ -17,7 +19,9 @@ const App = () => {
         <Route path="/" element={<LoginPage />} />
 
         {/* "/dashboardPage"にアクセスした際にDashboardPageを表示 */}
-        <Route path="/dashboardPage" element={<DashboardPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/complete" element={<CompletePage />} />
+        <Route path="/DashboardPage" element={<DashboardPage />} />
       </Routes>
     </Router>
   );

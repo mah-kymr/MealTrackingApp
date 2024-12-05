@@ -1,3 +1,4 @@
+// backend/src/controllers/authController.js
 // 認証関連のロジック
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken"); // JWTを使用するためにインポート

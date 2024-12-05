@@ -5,6 +5,7 @@ const router = express.Router();
 const { register, login, logout } = require("../../controllers/authController");
 // ミドルウェアをインポート
 const authMiddleware = require("../../middlewares/authMiddleware");
+const { default: CompletePage } = require("../../../../frontend/src/pages/CompletePage");
 
 // ユーザー登録エンドポイント（認証不要）
 router.post("/register", register);
