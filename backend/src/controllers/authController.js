@@ -25,13 +25,20 @@ const register = async (req, res) => {
       [username, hashedPassword]
     );
 
+    // 登録されたユーザー情報を取得
+    const newUser = result.rows[0];
+
+    // JWTの生成
+    const token = jwt.sign(
+      { user_id: newUser.user_id, username: newUser.username },
+      process.env.JWT_SECRET, // JWTのシークレットキー（.envで設定）
+      { expiresIn: "1h" } // トークンの有効期限
+    );
+
     // 成功レスポンス
     res.status(201).json({
       message: "User registered successfully",
-      user: {
-        user_id: result.rows[0].user_id,
-        username: result.rows[0].username,
-      },
+      token: token, // トークンをレスポンスとして返す
     });
   } catch (err) {
     // エラーハンドリング
@@ -98,4 +105,23 @@ const logout = (req, res) => {
   res.status(200).json({ message: "Logged out successfully" });
 };
 
-module.exports = { register, login, logout };
+// トークン検証関数
+const verifyToken = (req, res, next) => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // "Bearer token" からトークンを抽出
+
+  if (!token) {
+    return res.status(403).json({ error: "Token is required" }); // トークンがない場合
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: "Invalid or expired token" }); // トークンが無効な場合
+    }
+
+    // トークンが有効な場合、ユーザー情報をリクエストに追加して次のミドルウェアに進む
+    req.user = decoded;
+    next(); // 次のミドルウェアまたはルートハンドラーに進む
+  });
+};
+
+module.exports = { register, login, logout, verifyToken };

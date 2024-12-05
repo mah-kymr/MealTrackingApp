@@ -13,10 +13,13 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    req.user = decoded; // デコードされたユーザー情報をリクエストに追加
     next();
   } catch (error) {
-    res.status(401).json({ error: "トークンが無効です。" });
+    error.name === "TokenExpiredError"
+      ? "トークンの有効期限が切れています。"
+      : "トークンが無効です。";
+    res.status(401).json({ error: message });
   }
 };
 

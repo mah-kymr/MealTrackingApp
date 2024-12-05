@@ -1,11 +1,55 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const CompletePage = () => {
   const navigate = useNavigate();
+  const [isTokenValid, setIsTokenValid] = useState(false); // デフォルトはfalseにする
+  const [token, setToken] = useState(localStorage.getItem("token"));
+
+  // トークン検証用のAPIを呼び出して、トークンが有効か確認
+  useEffect(() => {
+    console.log("Current token:", token); // デバッグ用ログ
+
+    if (!token) {
+      navigate("/login"); // トークンがない場合はログインページにリダイレクト
+      return;
+    }
+
+    const verifyToken = async () => {
+      try {
+        // トークン検証用のバックエンドエンドポイントを呼び出し
+        const response = await fetch("/api/v1/auth/verify", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log("Verify token response:", response.status); // デバッグ用ログ
+
+        if (response.ok) {
+          // レスポンスが成功した場合のみトークンを有効とする
+          setIsTokenValid(true);
+        } else {
+          // トークンが無効な場合
+          localStorage.removeItem("token"); // トークンを削除
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("トークン検証エラー:", error);
+        setIsTokenValid(false);
+        navigate("/login");
+      }
+    };
+
+    verifyToken();
+  }, [token, navigate]);
 
   const handleNavigateToDashboard = () => {
-    navigate("/DashboardPage");
+    // トークンが有効であればダッシュボードへ遷移
+    if (isTokenValid) {
+      navigate("/DashboardPage");
+    }
   };
 
   return (
