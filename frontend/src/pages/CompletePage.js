@@ -29,9 +29,11 @@ const CompletePage = () => {
 
         if (response.ok) {
           // レスポンスが成功した場合のみトークンを有効とする
+          console.log("トークンは有効です");
           setIsTokenValid(true);
         } else {
           // トークンが無効な場合
+          console.log("トークンは無効です");
           localStorage.removeItem("token"); // トークンを削除
           navigate("/login");
         }

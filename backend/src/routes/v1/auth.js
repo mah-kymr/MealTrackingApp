@@ -26,6 +26,8 @@ router.get("/profile", authMiddleware, (req, res) => {
 });
 
 // トークン検証エンドポイント
-router.get("/verify", verifyToken);
+router.get("/verify", authMiddleware, (req, res) => {
+  res.status(200).json({ message: "トークンは有効です。", user: req.user });
+});
 
 module.exports = router;
