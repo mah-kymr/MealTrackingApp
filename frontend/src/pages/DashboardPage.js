@@ -86,9 +86,9 @@ const DashboardPage = () => {
   // ローディング中の表示
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-brand-background">
         <div className="text-center">
-          <p className="text-xl text-gray-600">読み込み中...</p>
+          <p className="text-xl text-brand-secondary">読み込み中...</p>
         </div>
       </div>
     );
@@ -97,17 +97,17 @@ const DashboardPage = () => {
   // エラー発生時の表示
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex items-center justify-center bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <h2 className="text-center text-2xl font-bold text-red-600 mb-4">
+            <h2 className="text-center text-2xl font-bold text-brand-accent mb-4">
               エラーが発生しました
             </h2>
             <p className="text-center text-gray-700">{error}</p>
             <div className="flex justify-center mt-6">
               <button
                 onClick={handleLogout}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                className="bg-brand-primary hover:bg-brand-secondary text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
                 ログアウト
               </button>
@@ -120,15 +120,15 @@ const DashboardPage = () => {
 
   // メインのダッシュボード画面
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
           {/* ダッシュボードヘッダー */}
-          <div className="bg-indigo-600 text-white px-6 py-4 flex justify-between items-center">
+          <div className="bg-brand-secondary text-white px-6 py-4 flex justify-between items-center">
             <h1 className="text-2xl font-bold">ダッシュボード</h1>
             <button
               onClick={handleLogout}
-              className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             >
               ログアウト
             </button>
@@ -138,8 +138,8 @@ const DashboardPage = () => {
           <div className="p-6">
             <div className="grid md:grid-cols-2 gap-6">
               {/* 個人情報 */}
-              <div className="bg-gray-100 rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              <div className="bg-brand-background rounded-lg p-6">
+                <h2 className="text-xl font-semibold text-brand-accent mb-4">
                   ユーザー情報
                 </h2>
                 <div className="space-y-2">
@@ -154,20 +154,20 @@ const DashboardPage = () => {
               </div>
 
               {/* クイック統計 */}
-              <div className="bg-gray-100 rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              <div className="bg-brand-background rounded-lg p-6">
+                <h2 className="text-xl font-semibold text-brand-accent mb-4">
                   アカウント概要
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white rounded-lg p-4 text-center shadow-sm">
                     <p className="text-gray-500 text-sm">ステータス</p>
-                    <p className="text-2xl font-bold text-indigo-600">
+                    <p className="text-2xl font-bold text-brand-primary">
                       アクティブ
                     </p>
                   </div>
                   <div className="bg-white rounded-lg p-4 text-center shadow-sm">
                     <p className="text-gray-500 text-sm">アカウント作成日</p>
-                    <p className="text-sm font-bold text-indigo-600">
+                    <p className="text-sm font-bold text-brand-primary">
                       {new Date().toLocaleDateString()}
                     </p>
                   </div>

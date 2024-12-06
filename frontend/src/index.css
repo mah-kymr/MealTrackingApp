@@ -1,6 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  /* カスタムコンポーネントクラスの追加 */
+  .btn-primary {
+    @apply bg-brand-primary text-white px-4 py-2 rounded hover:bg-brand-secondary transition-colors;
+  }
+
+  .input-primary {
+    @apply border border-gray-300 focus:border-brand-accent focus:ring-brand-accent;
+  }
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
