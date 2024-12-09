@@ -31,5 +31,4 @@ yarn-error.log*
 
 # OSシステムファイル
 .DS_Store
-Thumbs.db.env
-**/.env
+Thumbs.db
