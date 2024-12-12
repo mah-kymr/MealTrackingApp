@@ -23,19 +23,15 @@ app.use(cors(corsOptions));
 // クライアントからのJSONデータを自動的にパースする
 app.use(express.json());
 
-// リクエストログのミドルウェア: 基本的なリクエスト情報をコンソールに出力
-app.use((req, res, next) => {
-  console.log(`Received ${req.method} request to ${req.path}`);
-  next();
-});
-
 // 詳細なリクエストログのミドルウェア: リクエストの詳細な情報をログ出力
 app.use((req, res, next) => {
+  const sanitizedHeaders = { ...req.headers };
+  delete sanitizedHeaders.authorization; // 機密情報を削除
   console.log("Request received:", {
     method: req.method,
     path: req.path,
     body: req.body,
-    headers: req.headers,
+    headers: sanitizedHeaders,
   });
   next();
 });
