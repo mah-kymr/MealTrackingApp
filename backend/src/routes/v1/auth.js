@@ -2,28 +2,39 @@
 // 認証関連のエンドポイント
 const express = require("express");
 const router = express.Router();
-const { register, login, logout } = require("../../controllers/authController");
+
+const {
+  register,
+  login,
+  logout,
+  getProfile,
+  updateProfile,
+} = require("../../controllers/authController");
+
+const { validate } = require("../../utils/validator");
+
 // ミドルウェアをインポート
 const authMiddleware = require("../../middlewares/authMiddleware");
 
 // ユーザー登録エンドポイント（認証不要）
-router.post("/register", register);
+router.post("/register", validate("register"), register);
 
 // ログインエンドポイント（認証不要）
-router.post("/login", login);
+router.post("/login", validate("login"), login);
 
 // ログアウトエンドポイント
 router.post("/logout", logout);
 
 // プロファイル取得エンドポイント（認証が必要）
-router.get("/profile", authMiddleware, (req, res) => {
-  // 必要最低限の情報を返す
-  res.status(200).json({
-    user_id: req.user.user_id,
-    username: req.user.username,
-    message: "ユーザープロファイルが正常に取得されました。",
-  });
-});
+router.get("/profile", authMiddleware, getProfile);
+
+// プロファイル更新エンドポイント（認証が必要）
+router.put(
+  "/profile",
+  authMiddleware,
+  validate("updateProfile"),
+  updateProfile
+);
 
 // トークン検証エンドポイント
 router.get("/verify", authMiddleware, (req, res) => {

@@ -6,13 +6,13 @@ const LoginPage = () => {
   // ユーザー名、パスワード、エラーメッセージ、ローディング状態を管理するためのステートを定義
   const [username, setUsername] = useState(""); // ユーザー名
   const [password, setPassword] = useState(""); // パスワード
-  const [error, setError] = useState(""); // エラーメッセージ
+  const [errors, setErrors] = useState([]); // エラーメッセージ
   const [isLoading, setIsLoading] = useState(false); // ローディング状態
 
   // ログインボタンが押されたときの処理
   const handleLogin = async (e) => {
     e.preventDefault(); // フォームのデフォルト動作（ページリロード）を防ぐ
-    setError(""); // 過去のエラーをクリア
+    setErrors([]); // 過去のエラーをクリア
     setIsLoading(true); // ローディング状態を開始
 
     try {
@@ -25,10 +25,21 @@ const LoginPage = () => {
       window.location.href = "/DashboardPage";
     } catch (err) {
       // エラーが発生した場合の処理
-      setError(err.message);
+      if (err.response && err.response.errors) {
+        // バックエンドのエラー配列をセット
+        setErrors(err.response.errors);
+      } else {
+        // その他のエラー
+        setErrors([{ message: err.message }]);
+      }
     } finally {
       setIsLoading(false); // ローディング状態を解除
     }
+  };
+
+  const getFieldError = (fieldName) => {
+    const fieldError = errors.find((err) => err.field === fieldName);
+    return fieldError ? fieldError.message : null;
   };
 
   return (
@@ -43,65 +54,70 @@ const LoginPage = () => {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {/* onSubmitにhandleLoginを紐づけることでログインボタン押下時の処理を実行 */}
-          <input type="hidden" name="remember" defaultValue="true" />
           <div className="rounded-md shadow-sm -space-y-px">
             {/* ユーザー名入力欄 */}
             <div>
-              <label htmlFor="username" className="sr-only">
-                ユーザー名
-              </label>
               <input
                 id="username"
                 name="username"
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-brand-secondary text-brand-primary rounded-t-md focus:outline-none focus:ring-brand-accent focus:border-brand-accent focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
+                  getFieldError("username")
+                    ? "border-red-500"
+                    : "border-gray-300"
+                } placeholder-brand-secondary text-brand-primary rounded-t-md focus:outline-none focus:ring-brand-accent focus:border-brand-accent focus:z-10 sm:text-sm`}
                 placeholder="ユーザー名"
-                value={username} // ステートとバインド
-                onChange={(e) => setUsername(e.target.value)} // 入力値が変わったらステートを更新
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                aria-describedby="username-error"
               />
+              {getFieldError("username") && (
+                <p id="username-error" className="text-red-500 text-sm">
+                  {getFieldError("username")}
+                </p>
+              )}
             </div>
             {/* パスワード入力欄 */}
             <div>
-              <label htmlFor="password" className="sr-only">
-                パスワード
-              </label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-brand-secondary text-brand-primary rounded-b-md focus:outline-none focus:ring-brand-accent focus:border-brand-accent focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
+                  getFieldError("password")
+                    ? "border-red-500"
+                    : "border-gray-300"
+                } placeholder-brand-secondary text-brand-primary rounded-b-md focus:outline-none focus:ring-brand-accent focus:border-brand-accent focus:z-10 sm:text-sm`}
                 placeholder="パスワード"
-                value={password} // ステートとバインド
-                onChange={(e) => setPassword(e.target.value)} // 入力値が変わったらステートを更新
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                aria-describedby="password-error"
               />
+              {getFieldError("password") && (
+                <p id="password-error" className="text-red-500 text-sm">
+                  {getFieldError("password")}
+                </p>
+              )}
             </div>
           </div>
-
-          {/* エラー表示エリア */}
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
-          )}
+          {errors
+            .filter((err) => !err.field)
+            .map((err, index) => (
+              <div key={index} className="text-red-500 text-sm text-center">
+                {err.message}
+              </div>
+            ))}
 
           {/* ログインボタン */}
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading} // ローディング中はボタンを無効化
-              className="w-full bg-brand-secondary 
-            hover:bg-brand-accent 
-            text-white 
-            py-2 
-            px-4 
-            rounded"
-            >
-              {isLoading ? "ログイン中..." : "ログイン"}
-              {/* ローディング中なら「ログイン中...」、それ以外は「ログイン」と表示 */}
-            </button>
-          </div>
-
-          {/* アカウント作成リンク */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-brand-secondary hover:bg-brand-accent text-white py-2 px-4 rounded"
+          >
+            {isLoading ? "ログイン中..." : "ログイン"}
+          </button>
           <div className="text-center">
             <a
               href="/register"
