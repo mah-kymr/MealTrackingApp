@@ -3,6 +3,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken"); // JWTを使用するためにインポート
 const pool = require("../config/db"); // DB接続設定をインポート
+const { validate, schemas } = require("../utils/validator");
 
 // ユーザー登録関数
 const register = async (req, res) => {
@@ -44,9 +45,24 @@ const register = async (req, res) => {
     // エラーハンドリング
     if (err.code === "23505") {
       // PostgreSQLエラーコード 23505: 一意制約違反
-      res.status(409).json({ error: "Username already exists" });
+      res.status(409).json({
+        status: "error",
+        errors: [
+          {
+            field: "username",
+            message: "Username already exists",
+          },
+        ],
+      });
     } else {
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({
+        status: "error",
+        errors: [
+          {
+            message: "Internal server error",
+          },
+        ],
+      });
     }
   }
 };
@@ -85,7 +101,15 @@ const login = async (req, res) => {
 
     if (!isPasswordValid) {
       console.log("Invalid password for username:", username); // デバッグ用ログ
-      return res.status(401).json({ error: "Invalid username or password" });
+      return res.status(401).json({
+        status: "error",
+        errors: [
+          {
+            field: "password",
+            message: "Invalid username or password",
+          },
+        ],
+      });
     }
 
     // JWTの生成
@@ -103,30 +127,53 @@ const login = async (req, res) => {
     });
   } catch (err) {
     console.error("Error during login:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({
+      status: "error",
+      errors: [
+        {
+          message: "Internal server error",
+        },
+      ],
+    });
   }
 };
 
 const logout = (req, res) => {
   res.clearCookie("token"); // Cookieに保存していたトークンを削除
-  res.status(200).json({ message: "Logged out successfully" });
+  res.status(200).json({
+    status: "success",
+    message: "Logged out successfully",
+  });
 };
 
 // トークン検証関数
 const verifyToken = (req, res, next) => {
   const token = req.headers["authorization"]?.split(" ")[1]; // // Authorizationヘッダーからトークンを抽出して取得
   if (!token) {
-    return res.status(403).json({ error: "Token is required" }); // トークンがない場合
+    return res.status(403).json({
+      status: "error",
+      errors: [
+        {
+          message: "Token is required",
+        },
+      ],
+    });
   }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
-      return res.status(401).json({ error: "Invalid or expired token" }); // トークンが無効な場合
+      return res.status(401).json({
+        status: "error",
+        errors: [
+          {
+            message: "Invalid or expired token",
+          },
+        ],
+      });
     }
 
-    // トークンが有効な場合、ユーザー情報をリクエストに追加して次のミドルウェアに進む
     req.user = decoded;
-    next(); // 次のミドルウェアまたはルートハンドラーに進む
+    next();
   });
 };
 
@@ -141,14 +188,31 @@ const getProfile = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({
+        status: "error",
+        errors: [
+          {
+            message: "User not found",
+          },
+        ],
+      });
     }
 
     const userProfile = result.rows[0];
 
-    res.status(200).json(userProfile);
+    res.status(200).json({
+      status: "success",
+      user: userProfile,
+    });
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({
+      status: "error",
+      errors: [
+        {
+          message: "Internal server error",
+        },
+      ],
+    });
   }
 };
 
@@ -159,11 +223,14 @@ const updateProfile = async (req, res) => {
     const { username, password } = req.body;
 
     if (!username && !password) {
-      return res
-        .status(400)
-        .json({
-          error: "At least one field (username or password) is required",
-        });
+      return res.status(400).json({
+        status: "error",
+        errors: [
+          {
+            message: "At least one field (username or password) is required",
+          },
+        ],
+      });
     }
 
     let query = "UPDATE users SET ";
@@ -187,14 +254,32 @@ const updateProfile = async (req, res) => {
     const result = await pool.query(query, params);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({
+        status: "error",
+        errors: [
+          {
+            message: "User not found",
+          },
+        ],
+      });
     }
 
     const updatedProfile = result.rows[0];
 
-    res.status(200).json(updatedProfile);
+    res.status(200).json({
+      status: "success",
+      message: "Profile updated successfully",
+      user: updatedProfile,
+    });
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({
+      status: "error",
+      errors: [
+        {
+          message: "Internal server error",
+        },
+      ],
+    });
   }
 };
 

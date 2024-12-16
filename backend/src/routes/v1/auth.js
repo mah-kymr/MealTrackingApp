@@ -9,6 +9,7 @@ const {
   logout,
   getProfile,
   updateProfile,
+  verifyToken,
 } = require("../../controllers/authController");
 
 const { validate } = require("../../utils/validator");
@@ -38,7 +39,14 @@ router.put(
 
 // トークン検証エンドポイント
 router.get("/verify", authMiddleware, (req, res) => {
-  res.status(200).json({ message: "トークンは有効です。", user: req.user });
+  res.status(200).json({
+    status: "success",
+    message: "トークンは有効です。",
+    user: {
+      user_id: req.user.user_id,
+      username: req.user.username,
+    },
+  });
 });
 
 module.exports = router;

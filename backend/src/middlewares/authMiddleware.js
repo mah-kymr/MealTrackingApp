@@ -6,7 +6,14 @@ const jwt = require("jsonwebtoken");
 const authMiddleware = (req, res, next) => {
   const authHeader = req.header("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "トークンが提供されていません。" });
+    return res.status(401).json({
+      status: "error",
+      errors: [
+        {
+          message: "トークンが提供されていません。",
+        },
+      ],
+    });
   }
 
   const token = authHeader.split(" ")[1];
@@ -16,10 +23,21 @@ const authMiddleware = (req, res, next) => {
     req.user = decoded; // デコードされたユーザー情報をリクエストに追加
     next();
   } catch (error) {
-    error.name === "TokenExpiredError"
-      ? "トークンの有効期限が切れています。"
-      : "トークンが無効です。";
-    res.status(401).json({ error: message });
+    let message;
+    if (error.name === "TokenExpiredError") {
+      message = "トークンの有効期限が切れています。";
+    } else {
+      message = "トークンが無効です。";
+    }
+
+    res.status(401).json({
+      status: "error",
+      errors: [
+        {
+          message: message,
+        },
+      ],
+    });
   }
 };
 
