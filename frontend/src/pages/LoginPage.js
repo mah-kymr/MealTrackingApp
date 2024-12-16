@@ -9,6 +9,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState(""); // パスワード
   const [errors, setErrors] = useState([]); // エラーメッセージ
   const [isLoading, setIsLoading] = useState(false); // ローディング状態
+  const navigate = useNavigate();
 
   // すでにログイン済みの場合はリダイレクト
   useEffect(() => {
@@ -64,26 +65,10 @@ const LoginPage = () => {
     } catch (err) {
       console.error("Login error:", err);
 
-      // サーバーからのエラー処理
-      if (err.response && err.response.data) {
-        const serverErrors = err.response.data.errors || [];
-
-        // サーバーエラーがない場合のデフォルトエラー
-        const defaultErrors = [
-          {
-            message: "ログインに失敗しました。再度お試しください。",
-          },
-        ];
-
-        setErrors(serverErrors.length > 0 ? serverErrors : defaultErrors);
-      } else {
-        setErrors([
-          {
-            message:
-              "ネットワークエラーが発生しました。接続を確認してください。",
-          },
-        ]);
-      }
+      const serverErrors = err.response?.data?.errors || [
+        { message: "ログインに失敗しました。再度お試しください。" },
+      ];
+      setErrors(serverErrors);
     } finally {
       setIsLoading(false); // ローディング状態を解除
     }
@@ -98,12 +83,10 @@ const LoginPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
       {/* 中央揃えで全画面に適応したログインフォームの外枠 */}
       <div className="max-w-md w-full space-y-8">
-        <div>
-          {/* ログイン画面のタイトル */}
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-brand-primary">
-            ログイン
-          </h2>
-        </div>
+        {/* ログイン画面のタイトル */}
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-brand-primary">
+          ログイン
+        </h2>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {/* onSubmitにhandleLoginを紐づけることでログインボタン押下時の処理を実行 */}
           <div className="rounded-md shadow-sm -space-y-px">
@@ -154,28 +137,6 @@ const LoginPage = () => {
               )}
             </div>
           </div>
-          <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  getFieldError("password")
-                    ? "border-red-500"
-                    : "border-gray-300"
-                } placeholder-brand-secondary text-brand-primary rounded-b-md focus:outline-none focus:ring-brand-accent focus:border-brand-accent focus:z-10 sm:text-sm`}
-                placeholder="パスワード"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                aria-invalid={!!getFieldError("password")}
-                aria-describedby="password-error"
-                onPaste={(e) => e.preventDefault()} // ペースト制限
-              />
-              {getFieldError("password") && (
-                <p id="password-error" className="text-red-500 text-sm">
-                  {getFieldError("password")}
-                </p>
-              )}
 
           {/* フィールド外のエラーメッセージ */}
           {errors
@@ -185,7 +146,6 @@ const LoginPage = () => {
                 {err.message}
               </div>
             ))}
-
 
           {/* ログインボタン */}
           <button
