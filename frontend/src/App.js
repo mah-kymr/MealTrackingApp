@@ -1,3 +1,4 @@
+// frontend/src/App.js
 // React と React Router からの必要なモジュールをインポート
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";

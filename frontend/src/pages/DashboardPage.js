@@ -42,6 +42,7 @@ const DashboardPage = () => {
 
         // レスポンスステータスをチェック
         console.log("Response Status:", response.status);
+        console.log("Response headers:", response.headers);
 
         // レスポンスが正常でない場合はエラーをスロー
         if (!response.ok) {
@@ -52,11 +53,12 @@ const DashboardPage = () => {
 
         // JSONとしてパース
         const data = await response.json();
+        console.log("Received data:", data);
 
         // ユーザーデータをステートに設定
         setUserData({
-          userId: data.user_id,
-          username: data.username,
+          userId: data.user.user_id,
+          username: data.user.username,
         });
 
         // ローディング状態を解除
