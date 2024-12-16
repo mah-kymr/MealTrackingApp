@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 // ReactからuseStateフックをインポートすることで、関数コンポーネント内で状態管理を可能にする
+import { useNavigate } from "react-router-dom";
 import { login } from "../services/auth"; // login関数をインポート
 
 const LoginPage = () => {
@@ -9,9 +10,46 @@ const LoginPage = () => {
   const [errors, setErrors] = useState([]); // エラーメッセージ
   const [isLoading, setIsLoading] = useState(false); // ローディング状態
 
+  // すでにログイン済みの場合はリダイレクト
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
+  // クライアント側のバリデーション
+  const validateForm = () => {
+    const newErrors = [];
+
+    if (!username) {
+      newErrors.push({
+        field: "username",
+        message: "ユーザー名を入力してください",
+      });
+    }
+
+    if (!password) {
+      newErrors.push({
+        field: "password",
+        message: "パスワードを入力してください",
+      });
+    }
+
+    return newErrors;
+  };
+
   // ログインボタンが押されたときの処理
   const handleLogin = async (e) => {
     e.preventDefault(); // フォームのデフォルト動作（ページリロード）を防ぐ
+
+    // クライアント側バリデーション
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     setErrors([]); // 過去のエラーをクリア
     setIsLoading(true); // ローディング状態を開始
 
@@ -21,16 +59,30 @@ const LoginPage = () => {
       // ログイン成功時、トークンをローカルストレージに保存
       localStorage.setItem("token", data.token);
 
-      // 成功時にリダイレクト
-      window.location.href = "/DashboardPage";
+      // ダッシュボードにリダイレクト
+      navigate("/dashboard");
     } catch (err) {
-      // エラーが発生した場合の処理
-      if (err.response && err.response.errors) {
-        // バックエンドのエラー配列をセット
-        setErrors(err.response.errors);
+      console.error("Login error:", err);
+
+      // サーバーからのエラー処理
+      if (err.response && err.response.data) {
+        const serverErrors = err.response.data.errors || [];
+
+        // サーバーエラーがない場合のデフォルトエラー
+        const defaultErrors = [
+          {
+            message: "ログインに失敗しました。再度お試しください。",
+          },
+        ];
+
+        setErrors(serverErrors.length > 0 ? serverErrors : defaultErrors);
       } else {
-        // その他のエラー
-        setErrors([{ message: err.message }]);
+        setErrors([
+          {
+            message:
+              "ネットワークエラーが発生しました。接続を確認してください。",
+          },
+        ]);
       }
     } finally {
       setIsLoading(false); // ローディング状態を解除
@@ -102,6 +154,30 @@ const LoginPage = () => {
               )}
             </div>
           </div>
+          <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
+                  getFieldError("password")
+                    ? "border-red-500"
+                    : "border-gray-300"
+                } placeholder-brand-secondary text-brand-primary rounded-b-md focus:outline-none focus:ring-brand-accent focus:border-brand-accent focus:z-10 sm:text-sm`}
+                placeholder="パスワード"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                aria-invalid={!!getFieldError("password")}
+                aria-describedby="password-error"
+                onPaste={(e) => e.preventDefault()} // ペースト制限
+              />
+              {getFieldError("password") && (
+                <p id="password-error" className="text-red-500 text-sm">
+                  {getFieldError("password")}
+                </p>
+              )}
+
+          {/* フィールド外のエラーメッセージ */}
           {errors
             .filter((err) => !err.field)
             .map((err, index) => (
@@ -109,6 +185,7 @@ const LoginPage = () => {
                 {err.message}
               </div>
             ))}
+
 
           {/* ログインボタン */}
           <button
