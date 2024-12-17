@@ -1,13 +1,28 @@
 import React, { useState, useEffect } from "react";
-// ReactからuseStateフックをインポートすることで、関数コンポーネント内で状態管理を可能にする
+// ReactからuseStateフックをインポートする → 関数コンポーネント内で状態管理を可能にする
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/auth"; // login関数をインポート
+import * as Yup from "yup";
+
+// Yupバリデーションスキーマを定義
+const validationSchema = Yup.object({
+  username: Yup.string()
+    .required("ユーザー名を入力してください")
+    .test(
+      "alphanumWithSymbols",
+      "ユーザー名は英数字と一部の特殊文字 (@$!%*#?&) のみ使用できます",
+      (value) => /^[A-Za-z0-9@$!%*#?&]+$/.test(value)
+    ),
+  password: Yup.string()
+    .required("パスワードを入力してください")
+    .min(8, "パスワードは8文字以上で入力してください"),
+});
 
 const LoginPage = () => {
   // ユーザー名、パスワード、エラーメッセージ、ローディング状態を管理するためのステートを定義
   const [username, setUsername] = useState(""); // ユーザー名
   const [password, setPassword] = useState(""); // パスワード
-  const [errors, setErrors] = useState([]); // エラーメッセージ
+  const [errors, setErrors] = useState({}); // エラーメッセージ
   const [isLoading, setIsLoading] = useState(false); // ローディング状態
   const navigate = useNavigate();
 
@@ -18,70 +33,46 @@ const LoginPage = () => {
       navigate("/dashboard");
     }
   }, [navigate]);
-
-  // クライアント側のバリデーション
-  const validateForm = () => {
-    const newErrors = [];
-
-    if (!username) {
-      newErrors.push({
-        field: "username",
-        message: "ユーザー名を入力してください",
-      });
-    }
-
-    if (!password) {
-      newErrors.push({
-        field: "password",
-        message: "パスワードを入力してください",
-      });
-    }
-
-    return newErrors;
-  };
-
-  // ログインボタンが押されたときの処理
+  // フォームのバリデーションと送信処理
   const handleLogin = async (e) => {
-    e.preventDefault(); // フォームのデフォルト動作（ページリロード）を防ぐ
-
-    // クライアント側バリデーション
-    const validationErrors = validateForm();
-    if (validationErrors.length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    setErrors([]); // 過去のエラーをクリア
-    setIsLoading(true); // ローディング状態を開始
+    e.preventDefault();
+    setErrors({}); // エラー状態をクリア
 
     try {
-      const data = await login(username, password); // login関数を使用
+      // Yupでバリデーション実行
+      await validationSchema.validate(
+        { username, password },
+        { abortEarly: false }
+      );
 
-      // ログイン成功時、トークンをローカルストレージに保存
+      setIsLoading(true); // ローディングを開始
+
+      // サーバーにログインリクエストを送信
+      const data = await login(username, password);
       localStorage.setItem("token", data.token);
-
-      // ダッシュボードにリダイレクト
-      navigate("/dashboard");
+      navigate("/dashboard"); // ダッシュボードにリダイレクト
     } catch (err) {
-      console.error("Login error:", err);
-
-      const serverErrors = err.response?.data?.errors || [
-        { message: "ログインに失敗しました。再度お試しください。" },
-      ];
-      setErrors(serverErrors);
+      // Yupのバリデーションエラーを処理
+      if (err.name == "ValidationError") {
+        const validationErrors = {};
+        err.inner.forEach((error) => {
+          validationErrors[error.path] = error.message;
+        });
+        setErrors(validationErrors);
+      } else {
+        // サーバーエラーを処理
+        const serverErrors = err.response?.data?.errors || [
+          { message: "ログインに失敗しました。再度お試しください。" },
+        ];
+        setErrors({ server: serverErrors.map((e) => e.message).join(",") });
+      }
     } finally {
       setIsLoading(false); // ローディング状態を解除
     }
   };
 
-  const getFieldError = (fieldName) => {
-    const fieldError = errors.find((err) => err.field === fieldName);
-    return fieldError ? fieldError.message : null;
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
-      {/* 中央揃えで全画面に適応したログインフォームの外枠 */}
       <div className="max-w-md w-full space-y-8">
         {/* ログイン画面のタイトル */}
         <h2 className="mt-6 text-center text-3xl font-extrabold text-brand-primary">
@@ -96,23 +87,20 @@ const LoginPage = () => {
                 id="username"
                 name="username"
                 type="text"
-                required
                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  getFieldError("username")
-                    ? "border-red-500"
-                    : "border-gray-300"
+                  errors.username ? "border-red-500" : "border-gray-300"
                 } placeholder-brand-secondary text-brand-primary rounded-t-md focus:outline-none focus:ring-brand-accent focus:border-brand-accent focus:z-10 sm:text-sm`}
                 placeholder="ユーザー名"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 aria-describedby="username-error"
               />
-              {getFieldError("username") && (
+              {errors.username && (
                 <p
                   id="username-error"
                   className="bg-red-100 text-red-600 text-sm rounded-md p-2 mt-1"
                 >
-                  {getFieldError("username")}
+                  {errors.username}
                 </p>
               )}
             </div>
@@ -124,34 +112,30 @@ const LoginPage = () => {
                 type="password"
                 required
                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  getFieldError("password")
-                    ? "border-red-500"
-                    : "border-gray-300"
+                  errors.password ? "border-red-500" : "border-gray-300"
                 } placeholder-brand-secondary text-brand-primary rounded-b-md focus:outline-none focus:ring-brand-accent focus:border-brand-accent focus:z-10 sm:text-sm`}
                 placeholder="パスワード"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 aria-describedby="password-error"
               />
-              {getFieldError("password") && (
+              {errors.password && (
                 <p
                   id="password-error"
                   className="bg-red-100 text-red-600 text-sm rounded-md p-2 mt-1"
                 >
-                  {getFieldError("password")}
+                  {errors.password}
                 </p>
               )}
             </div>
           </div>
 
-          {/* フィールド外のエラーメッセージ */}
-          {errors
-            .filter((err) => !err.field)
-            .map((err, index) => (
-              <div key={index} className="text-red-500 text-sm text-center">
-                {err.message}
-              </div>
-            ))}
+          {/* サーバーエラーメッセージ */}
+          {errors.server && (
+            <div className="text-red-500 text-sm text-center">
+              {errors.server}
+            </div>
+          )}
 
           {/* ログインボタン */}
           <button
