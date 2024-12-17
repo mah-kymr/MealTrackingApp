@@ -1,5 +1,6 @@
 //backend/src/routes/v1/auth.js
-// 認証関連のエンドポイント
+// 認証関連のエンドポイント・認証が必要なエンドポイントでauthMiddlewareを使用する
+
 const express = require("express");
 const router = express.Router();
 
@@ -9,7 +10,6 @@ const {
   logout,
   getProfile,
   updateProfile,
-  verifyToken,
 } = require("../../controllers/authController");
 
 const { validate } = require("../../utils/validator");

@@ -49,7 +49,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRoutes);
 
 // グローバルエラーハンドリングミドルウェア
-// キャッチされなかったエラーを処理し、適切なエラーレスポンスを返す
+// キャッチされなかったエラーを処理してエラーレスポンスを返す
 app.use((err, req, res, next) => {
   console.error("Unhandled Error:", err);
   res.status(500).json({

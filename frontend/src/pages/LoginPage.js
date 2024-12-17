@@ -108,7 +108,10 @@ const LoginPage = () => {
                 aria-describedby="username-error"
               />
               {getFieldError("username") && (
-                <p id="username-error" className="text-red-500 text-sm">
+                <p
+                  id="username-error"
+                  className="bg-red-100 text-red-600 text-sm rounded-md p-2 mt-1"
+                >
                   {getFieldError("username")}
                 </p>
               )}
@@ -131,7 +134,10 @@ const LoginPage = () => {
                 aria-describedby="password-error"
               />
               {getFieldError("password") && (
-                <p id="password-error" className="text-red-500 text-sm">
+                <p
+                  id="password-error"
+                  className="bg-red-100 text-red-600 text-sm rounded-md p-2 mt-1"
+                >
                   {getFieldError("password")}
                 </p>
               )}
