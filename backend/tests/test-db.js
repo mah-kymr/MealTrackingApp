@@ -1,4 +1,4 @@
-const pool = require("./config/db"); // 正しいパスでdb.jsを読み込む
+const pool = require("../src/config/db"); // 正しいパスでdb.jsを読み込む
 
 // PostgreSQLに接続して現在時刻を取得するテスト
 pool.query("SELECT NOW()", (err, res) => {

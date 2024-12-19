@@ -53,7 +53,7 @@ const LoginPage = () => {
       navigate("/dashboard"); // ダッシュボードにリダイレクト
     } catch (err) {
       // Yupのバリデーションエラーを処理
-      if (err.name == "ValidationError") {
+      if (err.name === "ValidationError") {
         const validationErrors = {};
         err.inner.forEach((error) => {
           validationErrors[error.path] = error.message;
