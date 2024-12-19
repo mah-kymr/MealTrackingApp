@@ -3,7 +3,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken"); // JWTを使用するためにインポート
 const pool = require("../config/db"); // DB接続設定をインポート
-const { validate, schemas } = require("../utils/validator");
+const schemas = require("../validation/schemas"); // Joiスキーマをインポート
 
 // 共通エラーハンドリング関数
 const handleError = (res, statusCode, message) => {
@@ -15,14 +15,18 @@ const handleError = (res, statusCode, message) => {
 
 // ユーザー登録関数
 const register = async (req, res) => {
-  const { username, password } = req.body;
-
-  // 必須フィールドのチェック
-  if (!username || !password) {
-    return res
-      .status(400)
-      .json({ error: "Username and password are required" });
+  const { error } = schemas.register.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      status: "error",
+      errors: error.details.map((detail) => ({
+        field: detail.path[0],
+        message: detail.message,
+      })),
+    });
   }
+
+  const { username, password } = req.body;
 
   try {
     // パスワードをハッシュ化
@@ -61,24 +65,26 @@ const register = async (req, res) => {
 
 // ログイン関数
 const login = async (req, res) => {
-  console.log("Login request body:", req.body); // デバッグ用ログ
+  const { error } = schemas.login.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      status: "error",
+      errors: error.details.map((detail) => ({
+        field: detail.path[0],
+        message: detail.message,
+      })),
+    });
+  }
 
   const { username, password } = req.body;
-
-  // 必須フィールドのチェック
-  if (!username || !password) {
-    return handleError(res, 400, "Username and password are required");
-  }
 
   try {
     // データベースからユーザーを取得
     const result = await pool.query("SELECT * FROM users WHERE username = $1", [
       username,
     ]);
-    console.log("Query result:", result.rows); // デバッグ用ログ
 
     if (result.rows.length === 0) {
-      console.log("User not found for username:", username); // デバッグ用ログ
       return handleError(res, 401, "Invalid username or password");
     }
 
@@ -86,10 +92,8 @@ const login = async (req, res) => {
 
     // パスワードの検証
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    console.log("Password valid:", isPasswordValid); // デバッグ用ログ
 
     if (!isPasswordValid) {
-      console.log("Invalid password for username:", username); // デバッグ用ログ
       return handleError(res, 401, "Invalid username or password");
     }
 
@@ -99,7 +103,6 @@ const login = async (req, res) => {
       process.env.JWT_SECRET, // JWTのシークレットキー（.envで設定）
       { expiresIn: "1h" } // トークンの有効期限
     );
-    console.log("JWT generated:", token); // デバッグ用ログ
 
     // 成功レスポンス
     res.json({

@@ -2,6 +2,7 @@
 // 認証関連のエンドポイント・認証が必要なエンドポイントでauthMiddlewareを使用する
 
 const express = require("express");
+const validate = require("../../middlewares/validationMiddleware");
 const router = express.Router();
 
 const {
@@ -11,8 +12,6 @@ const {
   getProfile,
   updateProfile,
 } = require("../../controllers/authController");
-
-const { validate } = require("../../utils/validator");
 
 // ミドルウェアをインポート
 const authMiddleware = require("../../middlewares/authMiddleware");
