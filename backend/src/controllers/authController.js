@@ -17,6 +17,7 @@ const handleError = (res, statusCode, message) => {
 const register = async (req, res) => {
   const { error } = schemas.register.validate(req.body);
   if (error) {
+    console.error("Validation error:", error.details);
     return res.status(400).json({
       status: "error",
       errors: error.details.map((detail) => ({
@@ -67,6 +68,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   const { error } = schemas.login.validate(req.body);
   if (error) {
+    console.error("Validation error:", error.details);
     return res.status(400).json({
       status: "error",
       errors: error.details.map((detail) => ({
@@ -79,12 +81,16 @@ const login = async (req, res) => {
   const { username, password } = req.body;
 
   try {
+    console.log("Login attempt:", { username }); // ログイン試行の記録
+
     // データベースからユーザーを取得
     const result = await pool.query("SELECT * FROM users WHERE username = $1", [
       username,
     ]);
+    console.log("Database query result:", result.rows);
 
     if (result.rows.length === 0) {
+      console.log("Invalid username");
       return handleError(res, 401, "Invalid username or password");
     }
 
@@ -92,9 +98,11 @@ const login = async (req, res) => {
 
     // パスワードの検証
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    console.log("Password validation:", isPasswordValid);
 
     if (!isPasswordValid) {
-      return handleError(res, 401, "Invalid username or password");
+      console.log("Invalid password");
+      return res.status(401).json({ message: "Invalid username or password" });
     }
 
     // JWTの生成
@@ -103,15 +111,16 @@ const login = async (req, res) => {
       process.env.JWT_SECRET, // JWTのシークレットキー（.envで設定）
       { expiresIn: "1h" } // トークンの有効期限
     );
+    console.log("Generated token:", token);
 
     // 成功レスポンス
-    res.json({
+    res.status(200).json({
       message: "Login successful",
       token,
     });
   } catch (err) {
     console.error("Error during login:", err);
-    return handleError(res, 500, "Internal server error");
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 

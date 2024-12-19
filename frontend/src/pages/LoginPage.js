@@ -2,21 +2,7 @@ import React, { useState, useEffect } from "react";
 // ReactからuseStateフックをインポートする → 関数コンポーネント内で状態管理を可能にする
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/auth"; // login関数をインポート
-import * as Yup from "yup";
-
-// Yupバリデーションスキーマを定義
-const validationSchema = Yup.object({
-  username: Yup.string()
-    .required("ユーザー名を入力してください")
-    .test(
-      "alphanumWithSymbols",
-      "ユーザー名は英数字と一部の特殊文字 (@$!%*#?&) のみ使用できます",
-      (value) => /^[A-Za-z0-9@$!%*#?&]+$/.test(value)
-    ),
-  password: Yup.string()
-    .required("パスワードを入力してください")
-    .min(8, "パスワードは8文字以上で入力してください"),
-});
+import { validationRules } from "../shared/validationRules"; // 共有バリデーションルール
 
 const LoginPage = () => {
   // ユーザー名、パスワード、エラーメッセージ、ローディング状態を管理するためのステートを定義
@@ -33,41 +19,60 @@ const LoginPage = () => {
       navigate("/dashboard");
     }
   }, [navigate]);
-  // フォームのバリデーションと送信処理
+
+  // 入力バリデーション
+  const validateInput = () => {
+    const validationErrors = {};
+
+    // ユーザー名のバリデーション
+    if (!validationRules.username.regex.test(username)) {
+      validationErrors.username = validationRules.username.errorMessage;
+    } else if (username.length < validationRules.username.minLength) {
+      validationErrors.username = `ユーザー名は${validationRules.username.minLength}文字以上である必要があります`;
+    } else if (username.length > validationRules.username.maxLength) {
+      validationErrors.username = `ユーザー名は${validationRules.username.maxLength}文字以内である必要があります`;
+    }
+
+    // パスワードのバリデーション
+    if (!validationRules.password.regex.test(password)) {
+      validationErrors.password = validationRules.password.errorMessage;
+    }
+
+    return validationErrors;
+  };
+
+  // フォームの送信処理
   const handleLogin = async (e) => {
     e.preventDefault();
-    setErrors({}); // エラー状態をクリア
+    setErrors({}); // 過去のエラーをクリア
+
+    const validationErrors = validateInput();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
 
     try {
-      // Yupでバリデーション実行
-      await validationSchema.validate(
-        { username, password },
-        { abortEarly: false }
-      );
-
-      setIsLoading(true); // ローディングを開始
-
-      // サーバーにログインリクエストを送信
-      const data = await login(username, password);
+      setIsLoading(true); // ローディング開始
+      const data = await login(username, password); // サーバーにログインリクエスト
       localStorage.setItem("token", data.token);
       navigate("/dashboard"); // ダッシュボードにリダイレクト
     } catch (err) {
-      // Yupのバリデーションエラーを処理
-      if (err.name === "ValidationError") {
-        const validationErrors = {};
-        err.inner.forEach((error) => {
-          validationErrors[error.path] = error.message;
+      console.error("Error during login:", err);
+
+      // サーバーエラー処理
+      if (err.message.includes("500")) {
+        setErrors({
+          server:
+            "サーバーエラーが発生しました。管理者にお問い合わせください。",
         });
-        setErrors(validationErrors);
       } else {
-        // サーバーエラーを処理
-        const serverErrors = err.response?.data?.errors || [
-          { message: "ログインに失敗しました。再度お試しください。" },
-        ];
-        setErrors({ server: serverErrors.map((e) => e.message).join(",") });
+        setErrors({
+          server: err.message,
+        });
       }
     } finally {
-      setIsLoading(false); // ローディング状態を解除
+      setIsLoading(false); // ローディング終了
     }
   };
 

@@ -5,25 +5,29 @@ const validate = (schemaName) => {
     const schema = schemas[schemaName];
 
     if (!schema) {
+      console.error("Validation schema not found:", schemaName);
       return res.status(500).json({
         status: "error",
         errors: [{ message: "Invalid validation schema" }],
       });
     }
 
-    const { error } = schema.validate(req.body, {
-      abortEarly: false, // 全てのエラーを返す
-      allowUnknown: true, // 追加のフィールドを許容
-      stripUnknown: true, // 未定義のフィールドを削除
-    });
+    // Joiバリデーションの実行
+    const validationResult = schema.validate(req.body, { abortEarly: false });
 
-    if (error) {
-      const errors = error.details.map((detail) => ({
-        field: detail.path[0],
-        message: detail.message,
-      }));
-
-      return res.status(400).json({ status: "error", errors });
+    // エラーチェック
+    if (validationResult.error) {
+      console.error(
+        "Validation error details:",
+        validationResult.error.details
+      );
+      return res.status(400).json({
+        status: "error",
+        errors: validationResult.error.details.map((detail) => ({
+          field: detail.path[0],
+          message: detail.message,
+        })),
+      });
     }
 
     next();
