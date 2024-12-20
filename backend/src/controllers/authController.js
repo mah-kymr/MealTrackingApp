@@ -15,7 +15,18 @@ const handleError = (res, statusCode, message) => {
 
 // ユーザー登録関数
 const register = async (req, res) => {
-  const { error } = schemas.register.validate(req.body);
+  // リクエストボディから必要なプロパティを取得し、confirmPasswordを無視
+  const { username, password, confirmPassword } = req.body;
+
+  // パスワードと確認用パスワードが一致するか確認
+  if (password !== confirmPassword) {
+    return res.status(400).json({
+      status: "error",
+      errors: [{ field: "confirmPassword", message: "Passwords do not match" }],
+    });
+  }
+
+  const { error } = schemas.register.validate(username, password);
   if (error) {
     console.error("Validation error:", error.details);
     return res.status(400).json({
@@ -26,8 +37,6 @@ const register = async (req, res) => {
       })),
     });
   }
-
-  const { username, password } = req.body;
 
   try {
     // パスワードをハッシュ化
