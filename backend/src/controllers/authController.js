@@ -170,28 +170,28 @@ const updateProfile = async (req, res) => {
 
   try {
     const userId = req.user.user_id;
-    let query = "UPDATE users SET ";
-    const params = [];
-
+    let updateQuery = "UPDATE users SET ";
+    const values = [];
     if (username) {
-      params.push(username);
-      query += `username = $${params.length}`;
+      values.push(username);
+      updateQuery += `username = $${values.length}`;
     }
-
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      if (params.length > 0) query += ", ";
-      params.push(hashedPassword);
-      query += `password_hash = $${params.length}`;
+      if (values.length > 0) updateQuery += ", ";
+      values.push(hashedPassword);
+      updateQuery += `password_hash = $${values.length}`;
     }
+    values.push(userId);
+    updateQuery += ` WHERE user_id = $${values.length} RETURNING user_id, username`;
 
-    params.push(userId);
-    query += ` WHERE user_id = $${params.length} RETURNING user_id, username, created_at`;
+    const result = await pool.query(updateQuery, values);
 
-    const result = await pool.query(query, params);
-
-    if (result.rows.length === 0) {
-      return handleError(res, 404, "User not found");
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
     }
 
     res.status(200).json({
@@ -200,7 +200,29 @@ const updateProfile = async (req, res) => {
       user: result.rows[0],
     });
   } catch (err) {
-    return handleError(res, 500, "Internal server error");
+    console.error(err);
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+
+const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.user_id; // トークンからユーザーIDを取得
+    const result = await pool.query("DELETE FROM users WHERE user_id = $1", [
+      userId,
+    ]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "ユーザーが見つかりません。" });
+    }
+
+    res.status(200).json({ message: "アカウントが削除されました。" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "サーバーエラーが発生しました。" });
   }
 };
 
@@ -210,4 +232,5 @@ module.exports = {
   logout,
   getProfile,
   updateProfile,
+  deleteAccount,
 };

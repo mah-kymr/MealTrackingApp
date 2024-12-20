@@ -3,46 +3,53 @@
 
 const jwt = require("jsonwebtoken");
 
+// カスタムエラークラス
+class AuthError extends Error {
+  constructor(message, statusCode) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
 const authMiddleware = (req, res, next) => {
   const authHeader = req.header("Authorization");
 
   // トークンが提供されていない場合のエラーハンドリング
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({
-      status: "error",
-      errors: [
-        {
-          message: "トークンが提供されていません。",
-        },
-      ],
-    });
+    throw new AuthError("トークンが提供されていません。", 401);
   }
 
   const token = authHeader.split(" ")[1];
 
   try {
+    console.log("Token received for validation:", token.slice(0, 10) + "..."); // トークンの一部を記録
+
     // トークン検証
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded token:", decoded); // デコード結果を記録
     req.user = decoded; // デコードされたユーザー情報をリクエストに追加
     next(); // 次のミドルウェアまたはルートハンドラに進む
   } catch (error) {
-    let message;
-    if (error.name === "TokenExpiredError") {
-      message = "トークンの有効期限が切れています。";
-    } else {
-      message = "トークンが無効です。";
-    }
+    console.error("JWT verification error:", error); // エラー詳細を記録
 
-    // トークン検証がエラーの場合
-    res.status(401).json({
+    const message =
+      error.name === "TokenExpiredError"
+        ? "トークンの有効期限が切れています。"
+        : "トークンが無効です。";
+
+    throw new AuthError(message, 401);
+  }
+};
+
+// エラーハンドリングミドルウェア
+const errorHandler = (err, req, res, next) => {
+  if (err instanceof AuthError) {
+    return res.status(err.statusCode).json({
       status: "error",
-      errors: [
-        {
-          message: message,
-        },
-      ],
+      errors: [{ message: err.message }],
     });
   }
+  next(err); // その他のエラーは次のエラーハンドラに渡す
 };
 
 module.exports = authMiddleware;

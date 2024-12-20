@@ -85,6 +85,11 @@ const DashboardPage = () => {
     navigate("/");
   };
 
+  // プロフィールページへの遷移ハンドラ
+  const handleGoToProfile = () => {
+    navigate("/profile"); // プロフィールページに遷移
+  };
+
   // ローディング中の表示
   if (isLoading) {
     return (
@@ -128,12 +133,20 @@ const DashboardPage = () => {
           {/* ダッシュボードヘッダー */}
           <div className="bg-brand-secondary text-white px-6 py-4 flex justify-between items-center">
             <h1 className="text-2xl font-bold">ダッシュボード</h1>
-            <button
-              onClick={handleLogout}
-              className="bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-              ログアウト
-            </button>
+            <div>
+              <button
+                onClick={handleGoToProfile}
+                className="mr-4 bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                プロフィール
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                ログアウト
+              </button>
+            </div>
           </div>
 
           {/* ユーザー情報セクション */}
