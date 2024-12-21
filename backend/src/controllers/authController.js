@@ -17,6 +17,7 @@ const handleError = (res, statusCode, message) => {
 const register = async (req, res) => {
   // リクエストボディから必要なプロパティを取得し、confirmPasswordを無視
   const { username, password, confirmPassword } = req.body;
+  console.log("Request body:", req.body);
 
   // パスワードと確認用パスワードが一致するか確認
   if (password !== confirmPassword) {
@@ -26,7 +27,7 @@ const register = async (req, res) => {
     });
   }
 
-  const { error } = schemas.register.validate(username, password);
+  const { error } = schemas.register.validate(req.body);
   if (error) {
     console.error("Validation error:", error.details);
     return res.status(400).json({

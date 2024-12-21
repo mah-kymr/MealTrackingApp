@@ -6,8 +6,11 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "test": "echo \"Error: no tests specified\" && exit 1"
+    "test": "echo \"Error: no tests specified\" && exit 1",
+    "start:home": "NODE_ENV=home node src/app.js",
+    "start:school": "NODE_ENV=school node src/app.js"
   },
+  
   "keywords": [],
   "author": "",
   "license": "ISC",
