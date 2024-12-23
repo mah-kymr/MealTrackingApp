@@ -60,7 +60,7 @@ const RegisterPage = () => {
     }
 
     try {
-      const data = await register(username, password);
+      const data = await register(username, password, confirmPassword);
       // トークンをローカルストレージに保存
       localStorage.setItem("token", data.token);
       // 登録完了ページに遷移
@@ -160,9 +160,7 @@ const RegisterPage = () => {
 
           {/* サーバーエラーメッセージ */}
           {errors.server && (
-            <p div className="text-red-500 text-sm text-center">
-              {errors.server}
-            </p>
+            <p className="text-red-500 text-sm text-center">{errors.server}</p>
           )}
 
           {/* 登録ボタン */}

@@ -50,7 +50,7 @@ const CompletePage = () => {
   const handleNavigateToDashboard = () => {
     // トークンが有効であればダッシュボードへ遷移
     if (isTokenValid) {
-      navigate("/DashboardPage");
+      navigate("/Dashboard");
     }
   };
 

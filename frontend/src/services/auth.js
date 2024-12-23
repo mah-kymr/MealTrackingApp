@@ -47,7 +47,7 @@ export const login = async (username, password) => {
   }
 };
 
-export const register = async (username, password) => {
+export const register = async (username, password, confirmPassword) => {
   try {
     // ユーザー登録エンドポイントにリクエストを送信
     const response = await fetch(`/api/v1/auth/register`, {
@@ -55,26 +55,31 @@ export const register = async (username, password) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, confirmPassword }),
     });
 
-    // レスポンスのステータスが成功（200-299）でない場合、エラーを投げる
-    if (!response.ok) {
-      // エラーレスポンスからエラーメッセージを取得
+    if (response.status === 400) {
       const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      throw new Error(`Validation Error: ${errorData.message}`);
+    } else if (response.status === 500) {
+      throw new Error(
+        "Internal Server Error: サーバー側で問題が発生しました。"
+      );
+    } else if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || `Unexpected Error: ${response.status}`
+      );
     }
 
-    // レスポンスをJSONとしてパース
     const data = await response.json();
-
-    // パースされたデータを返す（通常はトークンや認証情報）
-    return data; // data.tokenなどを返す
+    return data; // data.token などを返す
   } catch (error) {
-    // エラーをコンソールに出力
+    if (error.name === "TypeError") {
+      console.error("Network Error:", error.message);
+      throw new Error("ネットワークエラー: サーバーに接続できませんでした。");
+    }
     console.error("Error during registration:", error);
-
-    // エラーを呼び出し元に再スロー
     throw error;
   }
 };

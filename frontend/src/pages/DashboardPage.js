@@ -30,6 +30,11 @@ const DashboardPage = () => {
       try {
         const token = localStorage.getItem("token");
 
+        if (!token) {
+          navigate("/");
+          return;
+        }
+
         // バックエンドのプロファイルエンドポイントにリクエスト
         const response = await fetch("/api/v1/auth/profile", {
           method: "GET",
@@ -46,9 +51,11 @@ const DashboardPage = () => {
 
         // レスポンスが正常でない場合はエラーをスロー
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Error Response:", errorText);
-          throw new Error(errorText || "プロファイル取得に失敗しました");
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Error Response:", errorData);
+          throw new Error(
+            errorData.message || "プロファイル取得に失敗しました"
+          );
         }
 
         // JSONとしてパース
@@ -60,16 +67,15 @@ const DashboardPage = () => {
           userId: data.user.user_id,
           username: data.user.username,
         });
-
-        // ローディング状態を解除
-        setIsLoading(false);
       } catch (err) {
         // エラーの詳細をログ出力
         console.error("Fetch Error Details:", err);
         setError(err.message);
-        setIsLoading(false);
         localStorage.removeItem("token");
         navigate("/"); // エラー時にログインページにリダイレクト
+      } finally {
+        // ローディング状態を解除
+        setIsLoading(false);
       }
     };
 
@@ -83,6 +89,11 @@ const DashboardPage = () => {
     localStorage.removeItem("token");
     // ログインページにリダイレクト
     navigate("/");
+  };
+
+  // プロフィールページへの遷移ハンドラ
+  const handleGoToProfile = () => {
+    navigate("/profile"); // プロフィールページに遷移
   };
 
   // ローディング中の表示
@@ -128,12 +139,20 @@ const DashboardPage = () => {
           {/* ダッシュボードヘッダー */}
           <div className="bg-brand-secondary text-white px-6 py-4 flex justify-between items-center">
             <h1 className="text-2xl font-bold">ダッシュボード</h1>
-            <button
-              onClick={handleLogout}
-              className="bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-              ログアウト
-            </button>
+            <div>
+              <button
+                onClick={handleGoToProfile}
+                className="mr-4 bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                プロフィール
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                ログアウト
+              </button>
+            </div>
           </div>
 
           {/* ユーザー情報セクション */}
