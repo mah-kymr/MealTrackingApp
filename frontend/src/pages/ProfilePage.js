@@ -8,7 +8,7 @@ const ProfilePage = () => {
   const handleUpdateProfile = async () => {
     try {
       const token = localStorage.getItem("token"); // 保存されているトークンを取得
-      const response = await fetch("/api/v1/profile", {
+      const response = await fetch("/api/v1/auth/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
