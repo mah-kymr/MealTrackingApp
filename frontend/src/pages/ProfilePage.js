@@ -8,7 +8,8 @@ const ProfilePage = () => {
   const [currentPassword, setCurrentPassword] = useState(""); // 現在のパスワード
   const [newPassword, setNewPassword] = useState(""); // 新しいパスワード
   const [confirmPassword, setConfirmPassword] = useState(""); // 確認用パスワード
-  const [message, setMessage] = useState(""); // 結果メッセージを表示
+  const [errors, setErrors] = useState({}); // エラーメッセージを個別に管理
+  const [success, setSuccess] = useState({}); // 成功メッセージを個別に管理
   const [isDeleting, setIsDeleting] = useState(false); // 削除確認モーダル表示状態
   const navigate = useNavigate();
 
@@ -49,7 +50,7 @@ const ProfilePage = () => {
     }
 
     if (name === "confirmPassword" && value !== newPassword) {
-      error = "パスワードが一致しません。";
+      error = "パスワードが一致しません";
     }
 
     return error;
@@ -58,10 +59,9 @@ const ProfilePage = () => {
   // ユーザー名更新
   const handleUpdateUsername = async () => {
     const usernameError = validateField("username", newUsername);
-    if (usernameError) {
-      setMessage(usernameError);
-      return;
-    }
+    setErrors((prev) => ({ ...prev, username: usernameError }));
+    if (usernameError) return;
+
     try {
       const token = localStorage.getItem("token"); // 保存されているトークンを取得
       const response = await fetch("/api/v1/auth/profile", {
@@ -74,15 +74,16 @@ const ProfilePage = () => {
       });
 
       if (response.ok) {
-        setMessage("プロフィールが更新されました！");
         setUsername(newUsername);
         setNewUsername("");
-      } else {
-        setMessage("プロフィールの更新に失敗しました。");
+        setErrors((prev) => ({ ...prev, username: "" }));
+        setSuccess((prev) => ({
+          ...prev,
+          username: "ユーザー名が正常に更新されました！",
+        }));
       }
     } catch (error) {
       console.error("Error updating username:", error);
-      setMessage("エラーが発生しました。");
     }
   };
 
@@ -93,10 +94,12 @@ const ProfilePage = () => {
       "confirmPassword",
       confirmPassword
     );
-    if (passwordError || confirmPasswordError) {
-      setMessage(passwordError || confirmPasswordError);
-      return;
-    }
+    setErrors((prev) => ({
+      ...prev,
+      password: passwordError,
+      confirmPassword: confirmPasswordError,
+    }));
+    if (passwordError || confirmPasswordError) return;
 
     try {
       const token = localStorage.getItem("token");
@@ -110,16 +113,17 @@ const ProfilePage = () => {
       });
 
       if (response.ok) {
-        setMessage("パスワードが更新されました！");
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
-      } else {
-        setMessage("パスワードの更新に失敗しました。");
+        setErrors((prev) => ({ ...prev, password: "", confirmPassword: "" }));
+        setSuccess((prev) => ({
+          ...prev,
+          password: "パスワードが正常に更新されました！",
+        }));
       }
     } catch (error) {
       console.error("Error updating password:", error);
-      setMessage("エラーが発生しました。");
     }
   };
   // アカウント削除確認モーダルを開く
@@ -141,12 +145,9 @@ const ProfilePage = () => {
       if (response.ok) {
         localStorage.removeItem("token");
         navigate("/login");
-      } else {
-        setMessage("アカウントの削除に失敗しました。");
       }
     } catch (error) {
       console.error("Error deleting account:", error);
-      setMessage("エラーが発生しました。");
     } finally {
       setIsDeleting(false);
     }
@@ -193,16 +194,21 @@ const ProfilePage = () => {
               placeholder="新しいユーザー名"
               value={newUsername}
               onChange={(e) => setNewUsername(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded mb-2"
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-brand-primary focus:outline-none"
             />
+            {errors.username && (
+              <p className="mt-2 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">{errors.username}</p>
+            )}
+            {success.username && (
+              <p className="mt-2 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">{success.username}</p>
+            )}
             <button
               onClick={handleUpdateUsername}
-              className="w-full bg-brand-secondary text-white py-2 px-4 rounded hover:bg-brand-accent"
+              className="w-full bg-brand-primary text-white py-2 px-4 rounded-md hover:bg-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-primary mt-4"
             >
               更新
             </button>
           </div>
-
           {/* カード3: パスワード変更 */}
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h2 className="text-xl font-semibold text-brand-primary mb-4">
@@ -220,18 +226,27 @@ const ProfilePage = () => {
               placeholder="新しいパスワード"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded mb-2"
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-brand-primary focus:outline-none mb-2"
             />
+            {errors.password && (
+              <p className="mt-2 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">{errors.password}</p>
+            )}
             <input
               type="password"
               placeholder="確認用パスワード"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded mb-2"
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-brand-primary focus:outline-none"
             />
+            {errors.confirmPassword && (
+              <p className="mt-2 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">{errors.confirmPassword}</p>
+            )}
+            {success.password && (
+              <p className="mt-2 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">{success.password}</p>
+            )}
             <button
               onClick={handleUpdatePassword}
-              className="w-full bg-brand-secondary text-white py-2 px-4 rounded hover:bg-brand-accent"
+              className="w-full bg-brand-primary text-white py-2 px-4 rounded-md hover:bg-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-primary mt-4"
             >
               更新
             </button>
@@ -246,7 +261,7 @@ const ProfilePage = () => {
             </p>
             <button
               onClick={handleDeleteAccountClick}
-              className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
+              className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 mt-4"
             >
               アカウントを削除する
             </button>
@@ -275,11 +290,6 @@ const ProfilePage = () => {
             </div>
           )}
         </div>
-
-        {/* メッセージ表示 */}
-        {message && (
-          <p className="text-center text-brand-primary mt-4">{message}</p>
-        )}
       </div>
     </div>
   );

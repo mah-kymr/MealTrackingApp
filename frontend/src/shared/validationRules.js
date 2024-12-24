@@ -3,7 +3,8 @@ export const validationRules = {
     regex: /^[A-Za-z0-9@$!%*#?&]+$/,
     minLength: 3,
     maxLength: 30,
-    errorMessage: "ユーザー名は英数字と一部の特殊文字のみ使用できます",
+    errorMessage:
+      "ユーザー名は3文字以上で、英数字と一部の特殊文字のみ使用できます",
   },
   password: {
     regex: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
