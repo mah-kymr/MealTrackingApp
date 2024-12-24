@@ -197,10 +197,14 @@ const ProfilePage = () => {
               className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-brand-primary focus:outline-none"
             />
             {errors.username && (
-              <p className="mt-2 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">{errors.username}</p>
+              <p className="mt-2 mb-4 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">
+                {errors.username}
+              </p>
             )}
             {success.username && (
-              <p className="mt-2 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">{success.username}</p>
+              <p className="mt-2 mb-4 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">
+                {success.username}
+              </p>
             )}
             <button
               onClick={handleUpdateUsername}
@@ -209,6 +213,7 @@ const ProfilePage = () => {
               更新
             </button>
           </div>
+
           {/* カード3: パスワード変更 */}
           <div className="bg-white rounded-lg p-6 shadow-md">
             <h2 className="text-xl font-semibold text-brand-primary mb-4">
@@ -229,7 +234,9 @@ const ProfilePage = () => {
               className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-brand-primary focus:outline-none mb-2"
             />
             {errors.password && (
-              <p className="mt-2 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">{errors.password}</p>
+              <p className="mt-2 mb-4 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">
+                {errors.password}
+              </p>
             )}
             <input
               type="password"
@@ -239,10 +246,14 @@ const ProfilePage = () => {
               className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-brand-primary focus:outline-none"
             />
             {errors.confirmPassword && (
-              <p className="mt-2 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">{errors.confirmPassword}</p>
+              <p className="mt-2 mb-4 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md ">
+                {errors.confirmPassword}
+              </p>
             )}
             {success.password && (
-              <p className="mt-2 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">{success.password}</p>
+              <p className="mt-2 mb-4 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">
+                {success.password}
+              </p>
             )}
             <button
               onClick={handleUpdatePassword}
