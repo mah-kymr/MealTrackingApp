@@ -4,10 +4,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        "brand-primary": "#42151f", // プライマリカラー
-        "brand-secondary": "#833143", // セカンダリカラー
-        "brand-accent": "#c85b7d", // アクセントカラー
-        "brand-background": "#fbf4f7", // 背景色
+        // プライマリカラー
+        "brand-primary": "#42151f",
+
+        // セカンダリカラー
+        "brand-secondary": "#833143",
+
+        // アクセントカラー
+        "brand-accent": "#c85b7d",
+
+        // 背景色
+        "brand-background": "#fbf4f7",
       },
     },
   },

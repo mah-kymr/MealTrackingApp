@@ -174,7 +174,7 @@ const updateProfile = async (req, res) => {
     return handleError(
       res,
       400,
-      "At least one field (username or password) is required"
+      "ユーザー名またはパスワードのいずれかを指定してください。"
     );
   }
 
@@ -200,20 +200,20 @@ const updateProfile = async (req, res) => {
     if (result.rowCount === 0) {
       return res.status(404).json({
         status: "error",
-        message: "User not found",
+        message: "ユーザーが見つかりません。",
       });
     }
 
     res.status(200).json({
       status: "success",
-      message: "Profile updated successfully",
+      message: "プロフィールが正常に更新されました。",
       user: result.rows[0],
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({
       status: "error",
-      message: "Internal server error",
+      message: "サーバーエラーが発生しました",
     });
   }
 };
