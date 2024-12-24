@@ -24,10 +24,10 @@ router.post("/login", validate("login"), login);
 // ログアウトエンドポイント
 router.post("/logout", logout);
 
-// プロファイル取得エンドポイント（認証が必要）
+// プロフィール取得エンドポイント（認証が必要）
 router.get("/profile", authMiddleware, getProfile);
 
-// プロファイル更新エンドポイント（認証が必要）
+// プロフィール更新エンドポイント（認証が必要）
 router.put(
   "/profile",
   authMiddleware,
@@ -35,7 +35,7 @@ router.put(
   updateProfile
 );
 
-// プロファイル削除エンドポイント
+// プロフィール削除エンドポイント
 router.delete("/delete", authMiddleware, deleteAccount);
 
 // トークン検証エンドポイント

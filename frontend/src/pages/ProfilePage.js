@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { validationRules } from "../shared/validationRules";
 
 const ProfilePage = () => {
   const [username, setUsername] = useState(""); // 現在のユーザー名を管理
@@ -9,7 +10,6 @@ const ProfilePage = () => {
   const [confirmPassword, setConfirmPassword] = useState(""); // 確認用パスワード
   const [message, setMessage] = useState(""); // 結果メッセージを表示
   const [isDeleting, setIsDeleting] = useState(false); // 削除確認モーダル表示状態
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,8 +33,35 @@ const ProfilePage = () => {
     fetchProfile();
   }, []);
 
+  const validateField = (name, value) => {
+    let error = "";
+
+    if (name === "username") {
+      if (!validationRules.username.regex.test(value)) {
+        error = validationRules.username.errorMessage;
+      }
+    }
+
+    if (name === "password") {
+      if (!validationRules.password.regex.test(value)) {
+        error = validationRules.password.errorMessage;
+      }
+    }
+
+    if (name === "confirmPassword" && value !== newPassword) {
+      error = "パスワードが一致しません。";
+    }
+
+    return error;
+  };
+
   // ユーザー名更新
   const handleUpdateUsername = async () => {
+    const usernameError = validateField("username", newUsername);
+    if (usernameError) {
+      setMessage(usernameError);
+      return;
+    }
     try {
       const token = localStorage.getItem("token"); // 保存されているトークンを取得
       const response = await fetch("/api/v1/auth/profile", {
@@ -61,8 +88,13 @@ const ProfilePage = () => {
 
   // パスワード更新
   const handleUpdatePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      setMessage("新しいパスワードが一致しません。");
+    const passwordError = validateField("password", newPassword);
+    const confirmPasswordError = validateField(
+      "confirmPassword",
+      confirmPassword
+    );
+    if (passwordError || confirmPasswordError) {
+      setMessage(passwordError || confirmPasswordError);
       return;
     }
 
