@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 // ReactからuseStateフックをインポートする → 関数コンポーネント内で状態管理を可能にする
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/auth"; // login関数をインポート
-import { validationRules } from "../shared/validationRules"; // 共有バリデーションルール
+import validationRules from "../shared/validationRules"; // 共有バリデーションルール
 
 const LoginPage = () => {
   // ユーザー名、パスワード、エラーメッセージ、ローディング状態を管理するためのステートを定義

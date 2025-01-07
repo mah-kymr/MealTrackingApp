@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { validationRules } from "../shared/validationRules";
+import validationRules from "../shared/validationRules";
 
 const ProfilePage = () => {
   const [username, setUsername] = useState(""); // 現在のユーザー名を管理
@@ -38,7 +38,11 @@ const ProfilePage = () => {
     let error = "";
 
     if (name === "username") {
-      if (!validationRules.username.regex.test(value)) {
+      if (value.length < validationRules.username.minLength) {
+        error = `ユーザー名は${validationRules.username.minLength}文字以上である必要があります`;
+      } else if (value.length > validationRules.username.maxLength) {
+        error = `ユーザー名は${validationRules.username.maxLength}文字以内である必要があります`;
+      } else if (!validationRules.username.regex.test(value)) {
         error = validationRules.username.errorMessage;
       }
     }
@@ -193,8 +197,16 @@ const ProfilePage = () => {
               type="text"
               placeholder="新しいユーザー名"
               value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-brand-primary focus:outline-none"
+              onChange={(e) => {
+                setNewUsername(e.target.value);
+                setErrors((prev) => ({
+                  ...prev,
+                  username: validateField("username", e.target.value),
+                }));
+              }}
+              className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-brand-primary focus:outline-none ${
+                errors.username ? "border-red-500" : "border-gray-300"
+              }`}
             />
             {errors.username && (
               <p className="mt-2 mb-4 text-sm text-red-600 bg-red-100 px-4 py-2 rounded-md">
