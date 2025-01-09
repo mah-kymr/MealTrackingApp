@@ -166,36 +166,24 @@ const getProfile = async (req, res) => {
   }
 };
 
-// プロフィール更新関数
+// ユーザー名を更新する
 const updateProfile = async (req, res) => {
-  const { username, password } = req.body;
+  const { username } = req.body;
 
-  if (!username && !password) {
-    return handleError(
-      res,
-      400,
-      "ユーザー名またはパスワードのいずれかを指定してください。"
-    );
+  if (!username) {
+    return res.status(400).json({
+      status: "error",
+      message: "ユーザー名は必須です。",
+    });
   }
 
   try {
     const userId = req.user.user_id;
-    let updateQuery = "UPDATE users SET ";
-    const values = [];
-    if (username) {
-      values.push(username);
-      updateQuery += `username = $${values.length}`;
-    }
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      if (values.length > 0) updateQuery += ", ";
-      values.push(hashedPassword);
-      updateQuery += `password_hash = $${values.length}`;
-    }
-    values.push(userId);
-    updateQuery += ` WHERE user_id = $${values.length} RETURNING user_id, username`;
 
-    const result = await pool.query(updateQuery, values);
+    const result = await pool.query(
+      "UPDATE users SET username = $1 WHERE user_id = $2 RETURNING user_id, username",
+      [username, userId]
+    );
 
     if (result.rowCount === 0) {
       return res.status(404).json({
@@ -206,14 +194,63 @@ const updateProfile = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      message: "プロフィールが正常に更新されました。",
+      message: "ユーザー名が正常に更新されました。",
       user: result.rows[0],
     });
   } catch (err) {
-    console.error(err);
+    console.error("Error updating profile:", err);
     res.status(500).json({
       status: "error",
-      message: "サーバーエラーが発生しました",
+      message: "サーバーエラーが発生しました。",
+    });
+  }
+};
+
+// パスワードを更新する
+const updatePassword = async (req, res) => {
+  const { currentPassword, password } = req.body;
+  const userId = req.user.user_id;
+
+  try {
+    const user = await pool.query(
+      "SELECT password_hash FROM users WHERE user_id = $1",
+      [userId]
+    );
+
+    if (!user.rows.length) {
+      return res.status(404).json({
+        status: "error",
+        message: "ユーザーが見つかりません。",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(
+      currentPassword,
+      user.rows[0].password_hash
+    );
+
+    if (!isMatch) {
+      return res.status(400).json({
+        status: "error",
+        message: "現在のパスワードが正しくありません。",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await pool.query("UPDATE users SET password_hash = $1 WHERE user_id = $2", [
+      hashedPassword,
+      userId,
+    ]);
+
+    res.status(200).json({
+      status: "success",
+      message: "パスワードが正常に更新されました。",
+    });
+  } catch (err) {
+    console.error("Error updating password:", err);
+    res.status(500).json({
+      status: "error",
+      message: "サーバーエラーが発生しました。",
     });
   }
 };
@@ -242,5 +279,6 @@ module.exports = {
   logout,
   getProfile,
   updateProfile,
+  updatePassword,
   deleteAccount,
 };
