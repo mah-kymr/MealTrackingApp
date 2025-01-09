@@ -2,6 +2,65 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+const MealRecordSection = () => {
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
+  const [message, setMessage] = useState("");
+
+  const handleStart = () => {
+    setStartTime(new Date().toISOString());
+    setMessage("食事の開始時刻を記録しました！");
+  };
+
+  const handleEnd = async () => {
+    const now = new Date().toISOString();
+    setEndTime(now);
+
+    try {
+      const response = await fetch("/api/v1/meal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ start_time: startTime, end_time: now }),
+      });
+
+      if (!response.ok) {
+        throw new Error("記録の保存に失敗しました");
+      }
+
+      setMessage("食事記録が保存されました！");
+    } catch (error) {
+      setMessage("エラー: 記録の保存に失敗しました。");
+    }
+  };
+
+  return (
+    <div className="p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-xl font-bold text-brand-primary mb-4">
+        食事時間を記録する
+      </h2>
+      <p className="mb-4 text-brand-secondary">{message}</p>
+      <div className="flex space-x-4">
+        <button
+          onClick={handleStart}
+          className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
+        >
+          開始
+        </button>
+        <button
+          onClick={handleEnd}
+          className="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-700"
+          disabled={!startTime}
+        >
+          終了
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const DashboardPage = () => {
   // ステート管理
   // ユーザーデータ、ローディング状態、エラー状態を管理
@@ -195,6 +254,11 @@ const DashboardPage = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* 記録コーナーの追加 */}
+          <div className="p-6 space-y-6">
+            <MealRecordSection />
           </div>
         </div>
       </div>

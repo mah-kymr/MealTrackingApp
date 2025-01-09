@@ -4,6 +4,7 @@
 // 必要な外部モジュールとルートをインポート
 const express = require("express");
 const authRoutes = require("./routes/v1/auth"); // 認証関連のルートをインポート
+const mealRoutes = require("./routes/v1/mealRoutes");
 const cors = require("cors");
 require("dotenv").config(); // 環境変数を読み込む
 
@@ -47,6 +48,9 @@ app.get("/", (req, res) => {
 
 // 認証関連のルートを'/api/v1/auth'パスに登録
 app.use("/api/v1/auth", authRoutes);
+
+// 食事時間記録関連のルートを追加
+app.use("/api/v1/meal", mealRoutes);
 
 // グローバルエラーハンドリングミドルウェア
 // キャッチされなかったエラーを処理してエラーレスポンスを返す
