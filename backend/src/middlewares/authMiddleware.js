@@ -11,12 +11,17 @@ class AuthError extends Error {
   }
 }
 
+// 認証ミドルウェア
 const authMiddleware = (req, res, next) => {
   const authHeader = req.header("Authorization");
 
   // トークンが提供されていない場合のエラーハンドリング
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new AuthError("トークンが提供されていません。", 401);
+    console.error("Auth Error: トークンが提供されていません。");
+    return res.status(401).json({
+      status: "error",
+      errors: [{ message: "トークンが提供されていません。" }],
+    });
   }
 
   const token = authHeader.split(" ")[1];
@@ -27,29 +32,47 @@ const authMiddleware = (req, res, next) => {
     // トークン検証
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("Decoded token:", decoded); // デコード結果を記録
+
     req.user = decoded; // デコードされたユーザー情報をリクエストに追加
     next(); // 次のミドルウェアまたはルートハンドラに進む
   } catch (error) {
-    console.error("JWT verification error:", error); // エラー詳細を記録
+    console.error("JWT verification error:", error.message); // エラー詳細を記録
 
-    const message =
-      error.name === "TokenExpiredError"
-        ? "トークンの有効期限が切れています。"
-        : "トークンが無効です。";
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        status: "error",
+        errors: [{ message: "トークンの有効期限が切れています。" }],
+      });
+    }
 
-    throw new AuthError(message, 401);
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        status: "error",
+        errors: [{ message: "トークンが無効です。" }],
+      });
+    }
+
+    // 予期しないエラー
+    return res.status(500).json({
+      status: "error",
+      errors: [{ message: "認証処理中にエラーが発生しました。" }],
+    });
   }
 };
 
 // エラーハンドリングミドルウェア
 const errorHandler = (err, req, res, next) => {
   if (err instanceof AuthError) {
+    console.error("Handled AuthError:", err.message);
     return res.status(err.statusCode).json({
       status: "error",
       errors: [{ message: err.message }],
     });
   }
-  next(err); // その他のエラーは次のエラーハンドラに渡す
+
+  // その他のエラーは次のエラーハンドラに渡す
+  console.error("Unhandled Error:", err.message);
+  next(err);
 };
 
 module.exports = authMiddleware;

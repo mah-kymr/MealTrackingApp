@@ -1,3 +1,5 @@
+const { startTransition } = require("react");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{html,js,jsx,ts,tsx}"],
@@ -15,6 +17,11 @@ module.exports = {
 
         // 背景色
         "brand-background": "#fbf4f7",
+      },
+      fontFamily: {
+        sans: ["Zen Maru Gothic", "sans-serif"], // デフォルトに設定
+        serif: ["Georgia", "serif"],
+        mono: ["Courier New", "monospace"],
       },
     },
   },

@@ -4,6 +4,7 @@
 const express = require("express");
 const authMiddleware = require("../../middlewares/authMiddleware");
 const validate = require("../../middlewares/validationMiddleware");
+const authController = require("../../controllers/authController");
 const router = express.Router();
 
 const {
@@ -27,12 +28,20 @@ router.post("/logout", logout);
 // プロフィール取得エンドポイント（認証が必要）
 router.get("/profile", authMiddleware, getProfile);
 
-// プロフィール更新エンドポイント（認証が必要）
+// ユーザー名変更エンドポイント
 router.put(
   "/profile",
   authMiddleware,
   validate("updateProfile"),
-  updateProfile
+  authController.updateProfile
+);
+
+// パスワード変更エンドポイント
+router.put(
+  "/profile/password",
+  authMiddleware,
+  validate("updatePassword"),
+  authController.updatePassword
 );
 
 // プロフィール削除エンドポイント

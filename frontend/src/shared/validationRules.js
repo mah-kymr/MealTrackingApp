@@ -1,4 +1,4 @@
-export const validationRules = {
+const validationRules = {
   username: {
     regex: /^[A-Za-z0-9@$!%*#?&]+$/,
     minLength: 3,
@@ -13,3 +13,5 @@ export const validationRules = {
       "パスワードは8文字以上で、大文字、小文字、数字、特殊文字を含める必要があります",
   },
 };
+
+export default validationRules;
