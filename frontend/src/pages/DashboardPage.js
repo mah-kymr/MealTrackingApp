@@ -2,14 +2,22 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MealTracker from "../components/MealTracker";
+import MealRecordList from "../components/MealRecordList";
 
 const DashboardPage = () => {
   // ユーザー情報とローディング状態を管理
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [records, setRecords] = useState([]);
+
   // ページ遷移のためのナビゲーションフック
   const navigate = useNavigate();
+
+  // 新しい記録を先頭に追加
+  const handleAddRecord = (newRecord) => {
+    setRecords([newRecord, ...records]);
+  };
 
   useEffect(() => {
     // コンポーネントマウント時に実行される副作用関数
@@ -187,7 +195,7 @@ const DashboardPage = () => {
                   </div>
                   <div className="bg-white rounded-lg p-4 text-center shadow-sm">
                     <p className="text-gray-500 text-sm">アカウント作成日</p>
-                    <p className="text-sm font-bold text-brand-primary">
+                    <p className="text-2xl font-bold text-brand-primary">
                       {new Date().toLocaleDateString()}
                     </p>
                   </div>
@@ -196,9 +204,11 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          {/* 記録コーナーの追加 */}
           <div className="p-6 space-y-6">
-            <MealTracker />
+            {/* 記録操作区画 */}
+            <MealTracker onAddRecord={handleAddRecord} />
+            {/* 記録結果区画 */}
+            <MealRecordList records={records} />
           </div>
         </div>
       </div>

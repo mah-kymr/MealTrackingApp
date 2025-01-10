@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { getJstTimestamp } from "../utils/time"; // JSTタイムスタンプ関数をインポート
 
-const MealTracker = () => {
+const MealTracker = ({ onAddRecord }) => {
   const [startTime, setStartTime] = useState(null);
   const [message, setMessage] = useState("");
 
@@ -34,6 +34,13 @@ const MealTracker = () => {
         data.data.duration_minutes.seconds || 0
       }秒`;
 
+      // 記録を追加
+      onAddRecord({
+        startTime: startTime,
+        endTime: endTime,
+        duration: duration,
+      });
+
       setMessage(`記録が保存されました: ${duration}`);
       setStartTime(null); // 開始時刻をリセット
     } catch (error) {
@@ -47,10 +54,6 @@ const MealTracker = () => {
       <h2 className="text-xl font-bold text-brand-primary mb-4">
         食事時間を記録する
       </h2>
-      <p className="mb-4 text-brand-secondary">{message}</p>
-      {startTime && (
-        <p className="mb-4 text-brand-secondary">記録中: {startTime}</p>
-      )}
       <div className="flex space-x-4">
         <button
           onClick={handleStart}
@@ -66,6 +69,10 @@ const MealTracker = () => {
         >
           終了
         </button>
+        {startTime && (
+          <p className="mb-4 text-brand-secondary">記録中: {startTime}</p>
+        )}
+        <p className="mb-4 text-brand-secondary">{message}</p>
       </div>
     </div>
   );
