@@ -29,7 +29,12 @@ const MealTracker = () => {
       }
 
       const data = await response.json();
-      setMessage(`記録が保存されました: ${data.data.duration_minutes}`);
+      // duration_minutesを適切にフォーマット
+      const duration = `${data.data.duration_minutes.minutes || 0}分 ${
+        data.data.duration_minutes.seconds || 0
+      }秒`;
+
+      setMessage(`記録が保存されました: ${duration}`);
       setStartTime(null); // 開始時刻をリセット
     } catch (error) {
       console.error("Error saving meal record:", error);
@@ -38,11 +43,30 @@ const MealTracker = () => {
   };
 
   return (
-    <div>
-      <button onClick={handleStart}>開始</button>
-      <button onClick={handleEnd} disabled={!startTime}>終了</button>
-      {startTime && <p>記録中: {startTime}</p>}
-      <p>{message}</p>
+    <div className="p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-xl font-bold text-brand-primary mb-4">
+        食事時間を記録する
+      </h2>
+      <p className="mb-4 text-brand-secondary">{message}</p>
+      {startTime && (
+        <p className="mb-4 text-brand-secondary">記録中: {startTime}</p>
+      )}
+      <div className="flex space-x-4">
+        <button
+          onClick={handleStart}
+          className="bg-brand-secondary text-white font-bold py-2 px-4 rounded hover:bg-brand-accent"
+        >
+          開始
+        </button>
+        <button
+          onClick={handleEnd}
+          className="bg-brand-background text-brand-primary font-bold py-2 px-4 rounded hover:bg-white focus:outline-none
+          focus:shadow-outline"
+          disabled={!startTime}
+        >
+          終了
+        </button>
+      </div>
     </div>
   );
 };
