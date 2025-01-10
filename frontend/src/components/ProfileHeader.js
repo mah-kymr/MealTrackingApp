@@ -7,7 +7,7 @@ const ProfileHeader = ({ onBack }) => (
       onClick={onBack}
       className="bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
     >
-      ダッシュボードに戻る
+      記録画面に戻る
     </button>
   </div>
 );

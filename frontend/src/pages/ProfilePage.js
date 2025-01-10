@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import validationRules from "../shared/validationRules";
-import InputField from "../components/InputField";
 import ConfirmationModal from "../components/ConfirmationModal";
 import ProfileHeader from "../components/ProfileHeader";
 
 const ProfilePage = () => {
-  const [username, setUsername] = useState(""); // 現在のユーザー名を管理
+  const [username, setUsername] = useState(""); // 現在のユーザー名
+  const [userId, setUserId] = useState(""); // ユーザーID
+  const [createdAt, setCreatedAt] = useState(""); // アカウント作成日
   const [newUsername, setNewUsername] = useState(""); // 新しいユーザー名
   const [currentPassword, setCurrentPassword] = useState(""); // 現在のパスワード
   const [newPassword, setNewPassword] = useState(""); // 新しいパスワード
@@ -28,6 +29,8 @@ const ProfilePage = () => {
         if (response.ok) {
           const data = await response.json();
           setUsername(data.user.username);
+          setCreatedAt(data.user.created_at); // 新しいプロパティをステートに保存
+          setUserId(data.user.user_id); // ユーザーIDも保存
         }
       } catch (error) {
         console.error("Failed to fetch profile:", error);
@@ -169,9 +172,24 @@ const ProfilePage = () => {
             <h2 className="text-xl font-semibold text-brand-primary mb-4">
               ユーザー情報
             </h2>
-            <p>
-              <strong>現在のユーザー名:</strong> {username}
-            </p>
+            <div className="grid grid-cols-2 gap-4">
+              {/* ユーザー名 */}
+              <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+                <p className="text-gray-500 text-sm">現在のユーザー名</p>
+                <p className="text-2xl font-bold text-brand-primary">
+                  {username || "未設定"}
+                </p>
+              </div>
+              {/* アカウント作成日 */}
+              <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+                <p className="text-gray-500 text-sm">アカウント作成日</p>
+                <p className="text-2xl font-bold text-brand-primary">
+                  {createdAt
+                    ? new Date(createdAt).toLocaleDateString()
+                    : "不明"}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* カード2: ユーザー名変更 */}

@@ -145,13 +145,17 @@ const DashboardPage = () => {
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
           {/* ダッシュボードヘッダー */}
           <div className="bg-brand-secondary text-white px-6 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold">ダッシュボード</h1>
+            <h1 className="text-2xl font-bold">
+              {userData?.username
+                ? `${userData.username} さんの記録`
+                : "ダッシュボード"}
+            </h1>
             <div>
               <button
                 onClick={handleGoToProfile}
                 className="mr-4 bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
-                プロフィール
+                プロフィール管理
               </button>
               <button
                 onClick={handleLogout}
@@ -159,48 +163,6 @@ const DashboardPage = () => {
               >
                 ログアウト
               </button>
-            </div>
-          </div>
-
-          {/* ユーザー情報セクション */}
-          <div className="p-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* 個人情報 */}
-              <div className="bg-brand-background rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-brand-accent mb-4">
-                  ユーザー情報
-                </h2>
-                <div className="space-y-2">
-                  <p>
-                    <strong>ユーザーID:</strong> {userData?.userId || "未設定"}
-                  </p>
-                  <p>
-                    <strong>ユーザー名:</strong>{" "}
-                    {userData?.username || "未設定"}
-                  </p>
-                </div>
-              </div>
-
-              {/* クイック統計 */}
-              <div className="bg-brand-background rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-brand-accent mb-4">
-                  アカウント概要
-                </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                    <p className="text-gray-500 text-sm">ステータス</p>
-                    <p className="text-2xl font-bold text-brand-primary">
-                      アクティブ
-                    </p>
-                  </div>
-                  <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-                    <p className="text-gray-500 text-sm">アカウント作成日</p>
-                    <p className="text-2xl font-bold text-brand-primary">
-                      {new Date().toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 

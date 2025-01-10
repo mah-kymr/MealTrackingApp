@@ -62,8 +62,9 @@ const MealTracker = ({ onAddRecord }) => {
         </button>
         <button
           onClick={handleEnd}
-          className="bg-brand-background text-brand-primary font-bold py-2 px-4 rounded hover:bg-white focus:outline-none
-          focus:shadow-outline"
+          className="bg-brand-background text-brand-primary
+          border border-brand-primary hover:bg-white font-bold py-2 px-4 rounded  focus:outline-none
+          focus:shadow-outline focus:shadow-outline"
           disabled={!startTime}
         >
           終了
