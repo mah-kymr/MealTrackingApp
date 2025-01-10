@@ -1,70 +1,61 @@
-import React, { useState } from "react";
-import { getJstTimestamp } from "../utils/time";
+return (
+  <div className="min-h-screen bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+      <ProfileHeader onBack={() => navigate("/dashboard")} />
 
-const MealTracker = ({ onAddRecord }) => {
-  const [startTime, setStartTime] = useState(null);
-  const [message, setMessage] = useState("");
+      <div className="p-6 space-y-6">
+        <InputField
+          label="新しいユーザー名"
+          value={newUsername}
+          onChange={(e) => setNewUsername(e.target.value)}
+          error={errors.username}
+          placeholder="新しいユーザー名"
+        />
+        <button onClick={handleUpdateUsername} className="w-full bg-brand-primary text-white py-2 px-4 rounded-md hover:bg-brand-secondary focus:outline-none">
+          ユーザー名を更新
+        </button>
 
-  const handleStart = () => {
-    const startTime = getJstTimestamp();
-    setStartTime(startTime);
-    setMessage(`開始時刻を記録しました: ${startTime}`);
-  };
+        <InputField
+          label="現在のパスワード"
+          type="password"
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          error={errors.currentPassword}
+        />
+        <InputField
+          label="新しいパスワード"
+          type="password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          error={errors.newPassword}
+        />
+        <InputField
+          label="確認用パスワード"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          error={errors.confirmPassword}
+        />
+        <button onClick={handleUpdatePassword} className="w-full bg-brand-primary text-white py-2 px-4 rounded-md hover:bg-brand-secondary focus:outline-none">
+          パスワードを更新
+        </button>
 
-  const handleEnd = async () => {
-    const endTime = getJstTimestamp();
-    try {
-      const response = await fetch("/api/v1/meal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ start_time: startTime, end_time: endTime }),
-      });
+        <button
+          onClick={() => setIsDeleting(true)}
+          className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 mt-4"
+        >
+          アカウントを削除
+        </button>
+      </div>
 
-      if (!response.ok) throw new Error("記録に失敗しました");
-
-      const data = await response.json();
-
-      // duration_minutesのフォーマット
-      const duration = `${data.data.duration_minutes.minutes || 0}分 ${data.data.duration_minutes.seconds || 0}秒`;
-
-      // 記録を追加
-      onAddRecord({
-        startTime: startTime,
-        endTime: endTime,
-        duration: duration,
-      });
-
-      setMessage(`記録が保存されました: ${duration}`);
-      setStartTime(null);
-    } catch (error) {
-      console.error("Error saving meal record:", error);
-      setMessage("記録の保存に失敗しました");
-    }
-  };
-
-  return (
-    <div className="p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-xl font-bold text-brand-primary mb-4">記録操作</h2>
-      <button
-        onClick={handleStart}
-        className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
-      >
-        開始
-      </button>
-      <button
-        onClick={handleEnd}
-        disabled={!startTime}
-        className="bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-700 ml-4"
-      >
-        終了
-      </button>
-      {startTime && <p className="mt-4">記録中: {startTime}</p>}
-      <p className="mt-4 text-brand-secondary">{message}</p>
+      <ConfirmationModal
+        isOpen={isDeleting}
+        onClose={() => setIsDeleting(false)}
+        onConfirm={handleDeleteAccount}
+        message="本当にアカウントを削除しますか？"
+      />
     </div>
-  );
-};
+  </div>
+);
 
-export default MealTracker;
+export default ProfilePage;

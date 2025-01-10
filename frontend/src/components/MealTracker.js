@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { getJstTimestamp } from "../utils/time"; // JSTタイムスタンプ関数をインポート
+import { getJstTimestamp, formatTime } from "../utils/time"; // JSTタイムスタンプ関数をインポート
 
 const MealTracker = ({ onAddRecord }) => {
   const [startTime, setStartTime] = useState(null);
@@ -29,10 +29,9 @@ const MealTracker = ({ onAddRecord }) => {
       }
 
       const data = await response.json();
-      // duration_minutesを適切にフォーマット
-      const duration = `${data.data.duration_minutes.minutes || 0}分 ${
-        data.data.duration_minutes.seconds || 0
-      }秒`;
+
+      // duration_minutesのフォーマット（時間と分のみ）
+      const duration = `${data.data.duration_minutes.minutes || 0}分`;
 
       // 記録を追加
       onAddRecord({
@@ -70,9 +69,10 @@ const MealTracker = ({ onAddRecord }) => {
           終了
         </button>
         {startTime && (
-          <p className="mb-4 text-brand-secondary">記録中: {startTime}</p>
+          <p className="mb-4 text-brand-secondary">
+            開始時刻: {formatTime(startTime)}
+          </p>
         )}
-        <p className="mb-4 text-brand-secondary">{message}</p>
       </div>
     </div>
   );
