@@ -56,7 +56,7 @@ const register = async (req, res) => {
     const token = jwt.sign(
       { user_id: newUser.user_id, username: newUser.username },
       process.env.JWT_SECRET, // JWTのシークレットキー（.envで設定）
-      { expiresIn: "1h" } // トークンの有効期限
+      { expiresIn: process.env.JWT_EXPIRATION } // トークンの有効期限を環境変数から取得
     );
 
     // 成功レスポンス
@@ -119,7 +119,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { user_id: user.user_id, username: user.username },
       process.env.JWT_SECRET, // JWTのシークレットキー（.envで設定）
-      { expiresIn: "1h" } // トークンの有効期限
+      { expiresIn: process.env.JWT_EXPIRATION } // トークンの有効期限を環境変数から取得
     );
     console.log("Generated token:", token);
 
