@@ -23,21 +23,34 @@ const recordMeal = async (req, res) => {
       end_time,
     });
 
-    // データベースに挿入し、duration_minutesを計算
+    // 直前の記録を取得して間隔を計算
+    const previousMeal = await pool.query(
+      `SELECT end_time FROM meal_records 
+           WHERE user_id = $1 
+           ORDER BY end_time DESC LIMIT 1`,
+      [req.user.user_id]
+    );
+
+    let intervalMinutes = null;
+    if (previousMeal.rows.length > 0) {
+      const previousEndTime = new Date(previousMeal.rows[0].end_time);
+      const currentStartTime = new Date(start_time);
+      const intervalMs = currentStartTime - previousEndTime;
+      intervalMinutes = Math.floor(intervalMs / 60000); // ミリ秒を分に変換
+    }
+
+    // データベースに挿入してduration_minutesを計算
     const result = await pool.query(
-      `INSERT INTO meal_records (user_id, start_time, end_time, duration_minutes)
-      VALUES ($1, $2, $3, $3::timestamp - $2::timestamp) RETURNING *`,
-      [req.user.user_id, start_time, end_time]
+      `INSERT INTO meal_records (user_id, start_time, end_time, duration_minutes, interval_minutes)
+      VALUES ($1, $2, $3, $3::timestamp - $2::timestamp, $4) RETURNING *`,
+      [req.user.user_id, start_time, end_time, intervalMinutes]
     );
 
     const record = result.rows[0];
     console.log("Database record:", record);
 
-    // duration_minutes を安全にフォーマット
-    const totalSeconds =
-      record.duration_minutes?.seconds !== undefined
-        ? record.duration_minutes.seconds
-        : 0;
+    // duration_minutes 安全にフォーマット
+    const totalSeconds = record.duration_minutes?.seconds || 0;
     const totalMinutes = Math.floor(totalSeconds / 60);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
@@ -53,7 +66,7 @@ const recordMeal = async (req, res) => {
       data: {
         ...record,
         formatted_duration: formattedDuration, // フォーマット済みの時間
-        raw_duration_seconds: totalSeconds, // デバッグ用に秒数も返す
+        interval_minutes: intervalMinutes, // 食事間隔
       },
     });
   } catch (err) {

@@ -24,6 +24,9 @@ const MealRecordList = ({ records }) => {
                 <p>開始時刻: {formatTime(record.startTime)}</p>
                 <p>終了時刻: {formatTime(record.endTime)}</p>
                 <p>食事にかけた時間: {record.duration}</p>
+                {record.interval !== null && (
+                  <p>食事間隔: {record.interval}分</p>
+                )}
               </div>
             </li>
           ))}

@@ -1,28 +1,61 @@
-import React from "react";
-import { formatTime } from "../utils/time";
+return (
+  <div className="min-h-screen bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+      <ProfileHeader onBack={() => navigate("/dashboard")} />
 
-const MealRecordList = ({ records }) => {
-  return (
-    <div className="p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-xl font-bold text-brand-primary mb-4">記録結果</h2>
-      {records.length === 0 ? (
-        <p>記録がありません。</p>
-      ) : (
-        <ul className="space-y-4">
-          {records.map((record, index) => (
-            <li
-              key={index}
-              className="p-4 border border-gray-300 rounded-lg shadow-sm"
-            >
-              <p>開始時刻: {formatTime(record.startTime)}</p>
-              <p>終了時刻: {formatTime(record.endTime)}</p>
-              <p>食事時間: {record.duration}</p>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="p-6 space-y-6">
+        <InputField
+          label="新しいユーザー名"
+          value={newUsername}
+          onChange={(e) => setNewUsername(e.target.value)}
+          error={errors.username}
+          placeholder="新しいユーザー名"
+        />
+        <button onClick={handleUpdateUsername} className="w-full bg-brand-primary text-white py-2 px-4 rounded-md hover:bg-brand-secondary focus:outline-none">
+          ユーザー名を更新
+        </button>
+
+        <InputField
+          label="現在のパスワード"
+          type="password"
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          error={errors.currentPassword}
+        />
+        <InputField
+          label="新しいパスワード"
+          type="password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          error={errors.newPassword}
+        />
+        <InputField
+          label="確認用パスワード"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          error={errors.confirmPassword}
+        />
+        <button onClick={handleUpdatePassword} className="w-full bg-brand-primary text-white py-2 px-4 rounded-md hover:bg-brand-secondary focus:outline-none">
+          パスワードを更新
+        </button>
+
+        <button
+          onClick={() => setIsDeleting(true)}
+          className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 mt-4"
+        >
+          アカウントを削除
+        </button>
+      </div>
+
+      <ConfirmationModal
+        isOpen={isDeleting}
+        onClose={() => setIsDeleting(false)}
+        onConfirm={handleDeleteAccount}
+        message="本当にアカウントを削除しますか？"
+      />
     </div>
-  );
-};
+  </div>
+);
 
-export default MealRecordList;
+export default ProfilePage;

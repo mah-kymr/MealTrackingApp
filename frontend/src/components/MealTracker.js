@@ -31,6 +31,7 @@ const MealTracker = ({ onAddRecord }) => {
 
       // formatted_durationを表示
       const formattedDuration = data.data.formatted_duration;
+      const intervalMinutes = data.data?.interval_minutes;
 
       if (!formattedDuration) {
         throw new Error("レスポンスにフォーマット済みデータが含まれていません");
@@ -41,6 +42,7 @@ const MealTracker = ({ onAddRecord }) => {
         startTime: startTime,
         endTime: endTime,
         duration: formattedDuration,
+        interval: intervalMinutes,
       });
 
       setStartTime(null);
