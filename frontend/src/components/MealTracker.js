@@ -24,24 +24,26 @@ const MealTracker = ({ onAddRecord }) => {
         body: JSON.stringify({ start_time: startTime, end_time: endTime }),
       });
 
-      if (!response.ok) {
-        throw new Error("記録に失敗しました");
-      }
+      if (!response.ok) throw new Error("記録に失敗しました");
 
       const data = await response.json();
+      console.log("Response data:", data);
 
-      // duration_minutesのフォーマット（時間と分のみ）
-      const duration = `${data.data.duration_minutes.minutes || 0}分`;
+      // formatted_durationを表示
+      const formattedDuration = data.data.formatted_duration;
 
-      // 記録を追加
+      if (!formattedDuration) {
+        throw new Error("レスポンスにフォーマット済みデータが含まれていません");
+      }
+
+      setMessage(`記録が保存されました: ${formattedDuration}`);
       onAddRecord({
         startTime: startTime,
         endTime: endTime,
-        duration: duration,
+        duration: formattedDuration,
       });
 
-      setMessage(`記録が保存されました: ${duration}`);
-      setStartTime(null); // 開始時刻をリセット
+      setStartTime(null);
     } catch (error) {
       console.error("Error saving meal record:", error);
       setMessage("記録の保存に失敗しました");

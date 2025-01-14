@@ -23,7 +23,7 @@ const MealRecordList = ({ records }) => {
               <div className="space-y-1">
                 <p>開始時刻: {formatTime(record.startTime)}</p>
                 <p>終了時刻: {formatTime(record.endTime)}</p>
-                <p>食事時間: {formatTime(record.duration)}</p>
+                <p>食事にかけた時間: {record.duration}</p>
               </div>
             </li>
           ))}
