@@ -1,106 +1,25 @@
-// DashboardPage.js
-import React, { useState, useEffect } from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUserProfile } from "../hooks/useUserProfile";
+import { MealContext } from "../context/MealContext";
 import MealTracker from "../components/MealTracker";
 import MealRecordList from "../components/MealRecordList";
 
 const DashboardPage = () => {
   // ユーザー情報とローディング状態を管理
-  const [userData, setUserData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [records, setRecords] = useState([]);
+  const { records, addRecord } = useContext(MealContext);
+  const { userData, isLoading, error } = useUserProfile();
 
   // ページ遷移のためのナビゲーションフック
   const navigate = useNavigate();
 
-  // 新しい記録を先頭に追加
-  const handleAddRecord = (newRecord) => {
-    setRecords([newRecord, ...records]);
-  };
-
-  useEffect(() => {
-    // コンポーネントマウント時に実行される副作用関数
-    // 認証トークンの確認と、ユーザープロファイル取得を行う
-
-    // ローカルストレージからトークンを取得
-    const token = localStorage.getItem("token");
-
-    // トークンが存在しない場合はログインページにリダイレクト
-    if (!token) {
-      navigate("/");
-      return;
-    }
-
-    // ユーザープロファイル取得の非同期関数
-    const fetchUserProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          navigate("/");
-          return;
-        }
-
-        // バックエンドのプロファイルエンドポイントにリクエスト
-        const response = await fetch("/api/v1/auth/profile", {
-          method: "GET",
-          headers: {
-            // 認証トークンをヘッダーに設定
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        // レスポンスステータスをチェック
-        console.log("Response Status:", response.status);
-        console.log("Response headers:", response.headers);
-
-        // レスポンスが正常でない場合はエラーをスロー
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error("Error Response:", errorData);
-          throw new Error(
-            errorData.message || "プロファイル取得に失敗しました"
-          );
-        }
-
-        // JSONとしてパース
-        const data = await response.json();
-        console.log("Received data:", data);
-
-        // ユーザーデータをステートに設定
-        setUserData({
-          userId: data.user.user_id,
-          username: data.user.username,
-        });
-      } catch (err) {
-        // エラーの詳細をログ出力
-        console.error("Fetch Error Details:", err);
-        setError(err.message);
-        localStorage.removeItem("token");
-        navigate("/"); // エラー時にログインページにリダイレクト
-      } finally {
-        // ローディング状態を解除
-        setIsLoading(false);
-      }
-    };
-
-    // ユーザープロファイル取得関数の実行
-    fetchUserProfile();
-  }, [navigate]); // navigateが変更された際に再実行
-
-  // ログアウトハンドラ
   const handleLogout = () => {
-    // トークンをローカルストレージから削除
     localStorage.removeItem("token");
-    // ログインページにリダイレクト
     navigate("/");
   };
 
-  // プロフィールページへの遷移ハンドラ
   const handleGoToProfile = () => {
-    navigate("/profile"); // プロフィールページに遷移
+    navigate("/profile");
   };
 
   // ローディング中の表示
@@ -168,7 +87,7 @@ const DashboardPage = () => {
 
           <div className="p-6 space-y-6">
             {/* 記録操作区画 */}
-            <MealTracker onAddRecord={handleAddRecord} />
+            <MealTracker onAddRecord={addRecord} />
             {/* 記録結果区画 */}
             <MealRecordList records={records} />
           </div>
