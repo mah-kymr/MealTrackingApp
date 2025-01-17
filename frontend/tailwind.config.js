@@ -20,8 +20,8 @@ module.exports = {
       },
       fontFamily: {
         sans: ["Zen Maru Gothic", "sans-serif"], // デフォルトに設定
-        serif: ["Georgia", "serif"],
-        mono: ["Courier New", "monospace"],
+        serif: ["Montserrat", "serif"],
+        mono: ["Roboto Mono", "monospace"],
       },
     },
   },

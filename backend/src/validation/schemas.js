@@ -89,6 +89,7 @@ const schemas = {
     start_time: customJoi.date().required().messages({
       "any.required": "開始時刻は必須です。",
       "date.base": "開始時刻は正しい日付形式で指定してください。",
+      "date.format": "開始時刻はISO 8601形式である必要があります。",
     }),
     end_time: customJoi
       .date()

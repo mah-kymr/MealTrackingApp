@@ -1,18 +1,26 @@
 import React, { useState } from "react";
-import { getJstTimestamp, formatTime } from "../utils/time"; // JSTタイムスタンプ関数をインポート
+
+const getJstTimestampIso = () => {
+  const date = new Date();
+  date.setHours(date.getHours() + 9); // JSTへ変換
+  return date.toISOString();
+};
 
 const MealTracker = ({ onAddRecord }) => {
   const [startTime, setStartTime] = useState(null);
   const [message, setMessage] = useState("");
 
   const handleStart = () => {
-    const startTime = getJstTimestamp(); // JSTの開始時刻を取得
+    const startTime = getJstTimestampIso() || "";  // ISO形式のを取得&デフォルト値（空文字列）設定
     setStartTime(startTime); // 状態として管理
     setMessage(`開始時刻を記録しました: ${startTime}`);
   };
 
   const handleEnd = async () => {
-    const endTime = getJstTimestamp(); // JSTの終了時刻を取得
+    const endTime = getJstTimestampIso() || ""; // ISO形式の終了時刻を取得&デフォルト値（空文字列）設定
+
+    // ログ: リクエストボディを確認
+    console.log("Request Body:", { start_time: startTime, end_time: endTime });
 
     try {
       const response = await fetch("/api/v1/meal", {
@@ -24,24 +32,31 @@ const MealTracker = ({ onAddRecord }) => {
         body: JSON.stringify({ start_time: startTime, end_time: endTime }),
       });
 
-      if (!response.ok) throw new Error("記録に失敗しました");
+      const responseData = await response.json();
 
-      const data = await response.json();
-      console.log("Response data:", data);
+      if (!response.ok) {
+        console.error("Server Error:", responseData);
+        throw new Error(responseData.message || "記録に失敗しました");
+      }
 
-      // formatted_durationを表示
-      const formattedDuration = data.data.formatted_duration;
-      const intervalMinutes = data.data?.interval_minutes;
+      console.log("Response data:", responseData);
 
-      if (!formattedDuration) {
+      const durationMinutes = responseData.data?.duration_minutes;
+      const intervalMinutes = responseData.data?.interval_minutes;
+
+      if (!durationMinutes) {
         throw new Error("レスポンスにフォーマット済みデータが含まれていません");
       }
 
-      setMessage(`記録が保存されました: ${formattedDuration}`);
+      setMessage(
+        `記録が保存されました: ${Math.floor(durationMinutes / 60)}時間 ${
+          durationMinutes % 60
+        }分`
+      );
       onAddRecord({
         startTime: startTime,
         endTime: endTime,
-        duration: formattedDuration,
+        duration: durationMinutes,
         interval: intervalMinutes,
       });
 
@@ -74,9 +89,7 @@ const MealTracker = ({ onAddRecord }) => {
           終了
         </button>
         {startTime && (
-          <p className="mb-4 text-brand-secondary">
-            開始時刻: {formatTime(startTime)}
-          </p>
+          <p className="mb-4 text-brand-secondary">開始時刻: {startTime}</p>
         )}
       </div>
     </div>

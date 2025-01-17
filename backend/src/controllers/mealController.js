@@ -7,6 +7,7 @@ const recordMeal = async (req, res) => {
   // バリデーションを実行
   const { error } = schemas.mealRecord.validate(req.body);
   if (error) {
+    console.error("Validation Error Details:", error.details); // バリデーションエラー詳細をログ
     return res.status(400).json({
       status: "error",
       errors: error.details.map((detail) => ({
@@ -38,34 +39,38 @@ const recordMeal = async (req, res) => {
       const intervalMs = currentStartTime - previousEndTime;
       intervalMinutes = Math.floor(intervalMs / 60000); // ミリ秒を分に変換
     }
+    // duration_minutes を計算
+    const durationMs = new Date(end_time) - new Date(start_time);
+    const durationMinutes = Math.max(1, Math.floor(durationMs / 60000)); // 最小値を1分に設定
+
+    console.log("Calculated duration_minutes:", durationMinutes);
+    console.log("Calculated interval_minutes:", intervalMinutes);
+
+    // 'INTERVAL' 型に変換
+    const durationValue = `${Math.max(1, durationMinutes)} minutes`; // 最小値を1分に設定
+    const intervalValue =
+      intervalMinutes !== null
+        ? `${Math.max(0, Math.floor(intervalMinutes))} minutes`
+        : "0 minutes";
+
+    console.log("Final duration_minutes (formatted):", durationValue);
+    console.log("Final interval_minutes (formatted):", intervalValue);
 
     // データベースに挿入してduration_minutesを計算
     const result = await pool.query(
       `INSERT INTO meal_records (user_id, start_time, end_time, duration_minutes, interval_minutes)
-      VALUES ($1, $2, $3, $3::timestamp - $2::timestamp, $4) RETURNING *`,
-      [req.user.user_id, start_time, end_time, intervalMinutes]
+       VALUES ($1, $2, $3, $3::timestamp - $2::timestamp, $4::INTERVAL) RETURNING *`,
+      [req.user.user_id, start_time, end_time, intervalValue]
     );
 
     const record = result.rows[0];
     console.log("Database record:", record);
 
-    // duration_minutes 安全にフォーマット
-    const totalSeconds = record.duration_minutes?.seconds || 0;
-    const totalMinutes = Math.floor(totalSeconds / 60);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-
-    // フォーマット済みの時間を生成
-    const formattedDuration =
-      hours > 0 ? `${hours}時間 ${minutes}分` : `${minutes}分`;
-
-    console.log("Formatted duration:", formattedDuration);
-
     res.status(201).json({
       status: "success",
       data: {
         ...record,
-        formatted_duration: formattedDuration, // フォーマット済みの時間
+        duration_minutes: durationMinutes, // 数値形式で返す
         interval_minutes: intervalMinutes, // 食事間隔
       },
     });
@@ -73,9 +78,11 @@ const recordMeal = async (req, res) => {
     // データベースエラーのハンドリング
     if (err.code === "23514") {
       // PostgreSQLの制約違反（check constraint）
+      console.error("Database Constraint Error:", err); // 制約エラー詳細をログ
       return res.status(400).json({
         status: "error",
-        message: "データの整合性に違反しています。入力値を確認してください。",
+        message:
+          "データの整合性に違反しています。開始時刻と終了時刻が正しいか確認してください。",
       });
     }
 

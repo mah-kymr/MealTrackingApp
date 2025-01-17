@@ -2,38 +2,65 @@ import React from "react";
 import { formatDate, formatTime } from "../utils/time";
 
 const MealRecordList = ({ records }) => {
+  // データの確認
+  console.log("Meal records:", records);
+
   return (
-    <div className="p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-xl font-bold text-brand-primary mb-4">
-        食事時間を確認する
-      </h2>
-      {records.length === 0 ? (
-        <p>まだ記録がありません。食事時間を記録してみましょう！</p>
-      ) : (
-        <ul className="space-y-4">
-          {records.map((record, index) => (
-            <li
-              key={index}
-              className="p-4 border border-gray-300 rounded-lg shadow-sm"
-            >
-              {/* 日付をカード内に1箇所だけ表示 */}
-              <p className="font-bold text-lg mb-2">
-                {formatDate(record.startTime)}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {records.map((record, index) => {
+        // 各recordの値をログ出力
+        console.log(`Record ${index + 1}:`, {
+          duration: record.duration,
+          interval: record.interval,
+          startTime: record.startTime,
+          endTime: record.endTime,
+        });
+
+        return (
+          <div
+            key={record.record_id || `record-${index}`}
+            className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
+          >
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              食事記録 #{record.record_id || index + 1}
+            </h3>
+            <p className="mb-2"></p>
+            <p>
+              <span className="font-semibold text-gray-600">開始時刻: </span>
+              <span className="font-mono font-bold text-gray-800">
+                {record.startTime ? formatTime(record.startTime) : "データなし"}
+              </span>
+            </p>
+            <p className="mb-2">
+              <span className="font-semibold text-gray-600">終了時刻: </span>
+              <span className="font-mono font-bold text-gray-800">
+                {record.endTime ? formatTime(record.endTime) : "データなし"}
+              </span>
+            </p>
+            <p className="mb-2">
+              <span className="font-semibold text-gray-600">所要時間: </span>
+              <span className="font-mono font-bold text-gray-800">
+                {record.duration
+                  ? `${Math.floor(Number(record.duration) / 60)}時間 ${
+                      Number(record.duration) % 60
+                    }分`
+                  : "データなし"}
+              </span>
+            </p>
+            {record.interval !== null && (
+              <p>
+                <span className="font-semibold text-gray-600">食事間隔: </span>
+                <span className="font-mono font-bold text-gray-800">
+                  {`${Math.floor(Number(record.interval) / 60)}時間 ${
+                    Number(record.interval) % 60
+                  }分`}
+                </span>
               </p>
-              <div className="space-y-1">
-                <p>開始時刻: {formatTime(record.startTime)}</p>
-                <p>終了時刻: {formatTime(record.endTime)}</p>
-                <p>食事にかけた時間: {record.duration}</p>
-                {record.interval !== null && (
-                  <p>食事間隔: {record.interval}分</p>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
-
 export default MealRecordList;

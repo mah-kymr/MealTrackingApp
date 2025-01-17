@@ -1,61 +1,66 @@
-return (
-  <div className="min-h-screen bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
-    <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-      <ProfileHeader onBack={() => navigate("/dashboard")} />
+import React from "react";
+import { formatDate, formatTime } from "../utils/time";
 
-      <div className="p-6 space-y-6">
-        <InputField
-          label="新しいユーザー名"
-          value={newUsername}
-          onChange={(e) => setNewUsername(e.target.value)}
-          error={errors.username}
-          placeholder="新しいユーザー名"
-        />
-        <button onClick={handleUpdateUsername} className="w-full bg-brand-primary text-white py-2 px-4 rounded-md hover:bg-brand-secondary focus:outline-none">
-          ユーザー名を更新
-        </button>
+const MealRecordList = ({ records }) => {
+  // データの確認
+  console.log("Meal records:", records);
 
-        <InputField
-          label="現在のパスワード"
-          type="password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          error={errors.currentPassword}
-        />
-        <InputField
-          label="新しいパスワード"
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          error={errors.newPassword}
-        />
-        <InputField
-          label="確認用パスワード"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          error={errors.confirmPassword}
-        />
-        <button onClick={handleUpdatePassword} className="w-full bg-brand-primary text-white py-2 px-4 rounded-md hover:bg-brand-secondary focus:outline-none">
-          パスワードを更新
-        </button>
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {records.map((record, index) => {
+        // 各recordの値をログ出力
+        console.log(`Record ${index + 1}:`, {
+          duration: record.duration,
+          interval: record.interval,
+          startTime: record.startTime,
+          endTime: record.endTime,
+        });
 
-        <button
-          onClick={() => setIsDeleting(true)}
-          className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 mt-4"
-        >
-          アカウントを削除
-        </button>
-      </div>
-
-      <ConfirmationModal
-        isOpen={isDeleting}
-        onClose={() => setIsDeleting(false)}
-        onConfirm={handleDeleteAccount}
-        message="本当にアカウントを削除しますか？"
-      />
+        return (
+          <div
+            key={record.record_id || `record-${index}`}
+            className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
+          >
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              食事記録 #{record.record_id || index + 1}
+            </h3>
+            <p className="mb-2">
+              <span className="font-semibold text-gray-600">開始時刻: </span>
+              <span className="font-mono font-bold text-gray-800">
+                {record.startTime ? formatTime(record.startTime) : "データなし"}
+              </span>
+            </p>
+            <p className="mb-2">
+              <span className="font-semibold text-gray-600">終了時刻: </span>
+              <span className="font-mono font-bold text-gray-800">
+                {record.endTime ? formatTime(record.endTime) : "データなし"}
+              </span>
+            </p>
+            <p className="mb-2">
+              <span className="font-semibold text-gray-600">所要時間: </span>
+              <span className="font-mono font-bold text-gray-800">
+                {record.duration
+                  ? `${Math.floor(Number(record.duration) / 60)}時間 ${
+                      Number(record.duration) % 60
+                    }分`
+                  : "データなし"}
+              </span>
+            </p>
+            {record.interval !== null && (
+              <p>
+                <span className="font-semibold text-gray-600">食事間隔: </span>
+                <span className="font-mono font-bold text-gray-800">
+                  {`${Math.floor(Number(record.interval) / 60)}時間 ${
+                    Number(record.interval) % 60
+                  }分`}
+                </span>
+              </p>
+            )}
+          </div>
+        );
+      })}
     </div>
-  </div>
-);
+  );
+};
 
-export default ProfilePage;
+export default MealRecordList;
