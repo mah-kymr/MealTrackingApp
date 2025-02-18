@@ -1,66 +1,27 @@
-import React from "react";
-import { formatDate, formatTime } from "../utils/time";
+// JSTのタイムスタンプを生成する
+export function getJstTimestamp(date = new Date()) {
+  const offset = 9 * 60; // JSTはUTC+9
+  const jstDate = new Date(date.getTime() + offset * 60000);
+  return jstDate.toISOString().slice(0, 19).replace("T", " ");
+}
 
-const MealRecordList = ({ records }) => {
-  // データの確認
-  console.log("Meal records:", records);
+// ISO文字列（UTC形式）をJSTの時間に変換
+export const formatToLocalTime = (isoString) => {
+  if (!isoString) return "不明";
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {records.map((record, index) => {
-        // 各recordの値をログ出力
-        console.log(`Record ${index + 1}:`, {
-          duration: record.duration,
-          interval: record.interval,
-          startTime: record.startTime,
-          endTime: record.endTime,
-        });
+  // UTC形式を基準に解析
+  const utcDate = new Date(isoString);
 
-        return (
-          <div
-            key={record.record_id || `record-${index}`}
-            className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
-          >
-            <h3 className="text-lg font-bold text-gray-800 mb-4">
-              食事記録 #{record.record_id || index + 1}
-            </h3>
-            <p className="mb-2">
-              <span className="font-semibold text-gray-600">開始時刻: </span>
-              <span className="font-mono font-bold text-gray-800">
-                {record.startTime ? formatTime(record.startTime) : "データなし"}
-              </span>
-            </p>
-            <p className="mb-2">
-              <span className="font-semibold text-gray-600">終了時刻: </span>
-              <span className="font-mono font-bold text-gray-800">
-                {record.endTime ? formatTime(record.endTime) : "データなし"}
-              </span>
-            </p>
-            <p className="mb-2">
-              <span className="font-semibold text-gray-600">所要時間: </span>
-              <span className="font-mono font-bold text-gray-800">
-                {record.duration
-                  ? `${Math.floor(Number(record.duration) / 60)}時間 ${
-                      Number(record.duration) % 60
-                    }分`
-                  : "データなし"}
-              </span>
-            </p>
-            {record.interval !== null && (
-              <p>
-                <span className="font-semibold text-gray-600">食事間隔: </span>
-                <span className="font-mono font-bold text-gray-800">
-                  {`${Math.floor(Number(record.interval) / 60)}時間 ${
-                    Number(record.interval) % 60
-                  }分`}
-                </span>
-              </p>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
+  // JSTに変換
+  const jstTime = utcDate.getTime() + 9 * 60 * 60 * 1000;
+  const jstDate = new Date(jstTime);
+
+  // JSTの時間をフォーマット
+  const options = {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  };
+  return jstDate.toLocaleTimeString("ja-JP", options);
 };
-
-export default MealRecordList;

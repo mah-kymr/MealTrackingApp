@@ -27,8 +27,8 @@ const recordMeal = async (req, res) => {
     // 直前の記録を取得して間隔を計算
     const previousMeal = await pool.query(
       `SELECT end_time FROM meal_records 
-           WHERE user_id = $1 
-           ORDER BY end_time DESC LIMIT 1`,
+       WHERE user_id = $1 
+       ORDER BY end_time DESC LIMIT 1`,
       [req.user.user_id]
     );
 
@@ -37,13 +37,18 @@ const recordMeal = async (req, res) => {
       const previousEndTime = new Date(previousMeal.rows[0].end_time);
       const currentStartTime = new Date(start_time);
       const intervalMs = currentStartTime - previousEndTime;
-      intervalMinutes = Math.floor(intervalMs / 60000); // ミリ秒を分に変換
+      intervalMinutes = Math.max(0, Math.floor(intervalMs / 60000));
     }
-    // duration_minutes を計算
-    const durationMs = new Date(end_time) - new Date(start_time);
-    const durationMinutes = Math.max(1, Math.floor(durationMs / 60000)); // 最小値を1分に設定
 
-    console.log("Calculated duration_minutes:", durationMinutes);
+    // duration_minutes を計算（修正）
+    const durationMs = new Date(end_time) - new Date(start_time);
+    const durationMinutes = Math.ceil(durationMs / 60000); // ⬅ 切り上げ処理で修正
+
+    console.log(
+      "Previous meal end time:",
+      previousMeal.rows[0]?.end_time || "None"
+    );
+    console.log("Current meal start time:", start_time);
     console.log("Calculated interval_minutes:", intervalMinutes);
 
     // 'INTERVAL' 型に変換
@@ -56,11 +61,17 @@ const recordMeal = async (req, res) => {
     console.log("Final duration_minutes (formatted):", durationValue);
     console.log("Final interval_minutes (formatted):", intervalValue);
 
-    // データベースに挿入してduration_minutesを計算
+    // 修正:PostgreSQL の EXTRACT を使用して、duration_minutes を整数で取得
     const result = await pool.query(
       `INSERT INTO meal_records (user_id, start_time, end_time, duration_minutes, interval_minutes)
-       VALUES ($1, $2, $3, $3::timestamp - $2::timestamp, $4::INTERVAL) RETURNING *`,
-      [req.user.user_id, start_time, end_time, intervalValue]
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [
+        req.user.user_id,
+        start_time,
+        end_time,
+        durationMinutes, // ⬅ ここで適切な durationMinutes を渡す
+        intervalMinutes !== null ? Math.floor(intervalMinutes) : 0, // ここで数値に変換
+      ]
     );
 
     const record = result.rows[0];
@@ -69,9 +80,26 @@ const recordMeal = async (req, res) => {
     res.status(201).json({
       status: "success",
       data: {
+        record_id: record.record_id,
+        user_id: record.user_id,
+        category_id: record.category_id,
+        start_time: new Date(record.start_time).toISOString(),
+        end_time: new Date(record.end_time).toISOString(),
+        duration_minutes:
+          record.duration_minutes !== null ? record.duration_minutes : 0, // 🚀 そのまま数値として返す
+        interval_minutes:
+          record.interval_minutes !== null ? record.interval_minutes : 0, // 🚀 そのまま数値として返す
+        created_at: new Date(record.created_at).toISOString(),
+      },
+    });
+
+    // デバッグログを追加（レスポンス内容を記録）
+    console.log("Response sent to client:", {
+      status: "success",
+      data: {
         ...record,
-        duration_minutes: durationMinutes, // 数値形式で返す
-        interval_minutes: intervalMinutes, // 食事間隔
+        start_time: new Date(record.start_time).toISOString(), // 明示的にUTC形式
+        end_time: new Date(record.end_time).toISOString(),
       },
     });
   } catch (err) {

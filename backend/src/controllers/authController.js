@@ -15,31 +15,45 @@ const handleError = (res, statusCode, message) => {
 
 // ユーザー登録関数
 const register = async (req, res) => {
-  // リクエストボディから必要なプロパティを取得し、confirmPasswordを無視
-  const { username, password, confirmPassword } = req.body;
-  console.log("Request body:", req.body);
-
-  // パスワードと確認用パスワードが一致するか確認
-  if (password !== confirmPassword) {
-    return res.status(400).json({
-      status: "error",
-      errors: [{ field: "confirmPassword", message: "Passwords do not match" }],
-    });
-  }
-
-  const { error } = schemas.register.validate(req.body);
-  if (error) {
-    console.error("Validation error:", error.details);
-    return res.status(400).json({
-      status: "error",
-      errors: error.details.map((detail) => ({
-        field: detail.path[0],
-        message: detail.message,
-      })),
-    });
-  }
-
   try {
+    console.log("Register request received:", req.body); // 📌 受け取ったリクエストボディをログ
+
+    // リクエストボディから必要なプロパティを取得し、confirmPasswordを無視
+    const { username, password, confirmPassword } = req.body;
+
+    // パスワードと確認用パスワードが一致するか確認
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        status: "error",
+        errors: [
+          { field: "confirmPassword", message: "Passwords do not match" },
+        ],
+      });
+    }
+
+    // ユーザー名の重複チェック
+    const existingUser = await pool.query(
+      "SELECT * FROM users WHERE username = $1",
+      [username]
+    );
+    if (existingUser.rows.length > 0) {
+      console.error("User already exists:", username);
+      return res.status(409).json({ message: "Username already exists" });
+    }
+
+    // joiバリデーション
+    const { error } = schemas.register.validate(req.body);
+    if (error) {
+      console.error("Validation error:", error.details);
+      return res.status(400).json({
+        status: "error",
+        errors: error.details.map((detail) => ({
+          field: detail.path[0],
+          message: detail.message,
+        })),
+      });
+    }
+
     // パスワードをハッシュ化
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -49,14 +63,15 @@ const register = async (req, res) => {
       [username, hashedPassword]
     );
 
-    // 登録されたユーザー情報を取得
-    const newUser = result.rows[0];
+    const newUser = result.rows[0]; // 📌 修正：newUser を定義
 
-    // JWTの生成
+    console.log("User registered successfully:", result.rows[0]); // 📌 登録されたユーザー情報をログ
+
+    // JWT トークンの生成
     const token = jwt.sign(
       { user_id: newUser.user_id, username: newUser.username },
       process.env.JWT_SECRET, // JWTのシークレットキー（.envで設定）
-      { expiresIn: process.env.JWT_EXPIRATION } // トークンの有効期限を環境変数から取得
+      { expiresIn: process.env.JWT_EXPIRATION || "1h" } // トークンの有効期限を環境変数から取得（未定義ならデフォルト1時間）
     );
 
     // 成功レスポンス
@@ -65,12 +80,18 @@ const register = async (req, res) => {
       token, // トークンをレスポンスとして返す
     });
   } catch (err) {
+    console.error("❌ Error in register function:", err); // 📌 エラー詳細をログ
     // エラーハンドリング
     if (err.code === "23505") {
       // PostgreSQLエラーコード 23505: 一意制約違反
-      return handleError(res, 409, "Username already exists");
+      return res
+        .status(409)
+        .json({ status: "error", message: "Username already exists" });
     }
-    return handleError(res, 500, "Internal server error");
+    res.status(500).json({
+      status: "error",
+      errors: [{ message: "Internal server error", details: err.message }],
+    });
   }
 };
 

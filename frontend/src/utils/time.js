@@ -12,7 +12,23 @@ export function formatDate(date) {
 }
 
 // 時間フォーマットを一元化
-export const formatTime = (dateString) => {
+export const formatTime = (isoString) => {
   const options = { hour: "2-digit", minute: "2-digit" };
-  return new Date(dateString).toLocaleTimeString("ja-JP", options);
+  return new Date(isoString).toLocaleTimeString("ja-JP", options);
+};
+
+export const formatToLocalTime = (isoString) => {
+  if (!isoString) return "不明";
+
+// UTC形式をそのまま表示（変換を一時停止）
+return isoString;
+};
+export const formatToLocalDate = (isoString) => {
+  const options = {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  };
+  return new Date(isoString).toLocaleDateString("ja-JP", options);
 };

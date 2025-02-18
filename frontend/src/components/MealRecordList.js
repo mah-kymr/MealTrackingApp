@@ -1,20 +1,30 @@
 import React from "react";
 import { formatDate, formatTime } from "../utils/time";
+import { formatToLocalTime } from "../utils/time";
 
 const MealRecordList = ({ records }) => {
-  // データの確認
-  console.log("Meal records:", records);
+  // データ形式の確認ログ
+  console.log("Meal records received from server:", records); // 全体のデータを確認
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {records.map((record, index) => {
-        // 各recordの値をログ出力
-        console.log(`Record ${index + 1}:`, {
-          duration: record.duration,
-          interval: record.interval,
-          startTime: record.startTime,
-          endTime: record.endTime,
-        });
+        console.log(`Record ${index + 1}:`, record); // 各レコードのデータを確認
+
+        // デバッグログ: タイムゾーン変換結果を確認
+        console.log("Raw startTime (from server):", record.startTime);
+        console.log("Parsed UTC Date:", new Date(record.startTime));
+        console.log(
+          "Corrected startTime (JST):",
+          formatToLocalTime(record.startTime)
+        );
+        console.log(
+          "System time (JST):",
+          new Date().toLocaleTimeString("ja-JP", { timeZone: "Asia/Tokyo" })
+        );
+        console.log("Raw record from server:", record);
+        console.log("Duration (from server):", record.duration);
+        console.log("Interval (from server):", record.interval);
 
         return (
           <div
@@ -28,21 +38,25 @@ const MealRecordList = ({ records }) => {
             <p>
               <span className="font-semibold text-gray-600">開始時刻: </span>
               <span className="font-mono font-bold text-gray-800">
-                {record.startTime ? formatTime(record.startTime) : "データなし"}
+                {record.startTime
+                  ? formatToLocalTime(record.startTime)
+                  : "データなし"}{" "}
               </span>
             </p>
             <p className="mb-2">
               <span className="font-semibold text-gray-600">終了時刻: </span>
               <span className="font-mono font-bold text-gray-800">
-                {record.endTime ? formatTime(record.endTime) : "データなし"}
+                {record.endTime
+                  ? formatToLocalTime(record.endTime)
+                  : "データなし"}{" "}
               </span>
             </p>
             <p className="mb-2">
               <span className="font-semibold text-gray-600">所要時間: </span>
               <span className="font-mono font-bold text-gray-800">
-                {record.duration
-                  ? `${Math.floor(Number(record.duration) / 60)}時間 ${
-                      Number(record.duration) % 60
+                {record.duration && !isNaN(record.duration)
+                  ? `${Math.floor(record.duration / 60)}時間 ${
+                      record.duration % 60
                     }分`
                   : "データなし"}
               </span>
@@ -51,9 +65,11 @@ const MealRecordList = ({ records }) => {
               <p>
                 <span className="font-semibold text-gray-600">食事間隔: </span>
                 <span className="font-mono font-bold text-gray-800">
-                  {`${Math.floor(Number(record.interval) / 60)}時間 ${
-                    Number(record.interval) % 60
-                  }分`}
+                  {record.interval && !isNaN(record.interval)
+                    ? `${Math.floor(record.interval / 60)}時間 ${
+                        record.interval % 60
+                      }分`
+                    : "データなし"}
                 </span>
               </p>
             )}

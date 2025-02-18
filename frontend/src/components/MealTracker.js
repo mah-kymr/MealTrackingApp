@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { formatToLocalTime } from "../utils/time"; // フォーマット関数をインポート
 
 const getJstTimestampIso = () => {
   const date = new Date();
@@ -11,7 +12,7 @@ const MealTracker = ({ onAddRecord }) => {
   const [message, setMessage] = useState("");
 
   const handleStart = () => {
-    const startTime = getJstTimestampIso() || "";  // ISO形式のを取得&デフォルト値（空文字列）設定
+    const startTime = getJstTimestampIso() || ""; // ISO形式のを取得&デフォルト値（空文字列）設定
     setStartTime(startTime); // 状態として管理
     setMessage(`開始時刻を記録しました: ${startTime}`);
   };
@@ -68,11 +69,11 @@ const MealTracker = ({ onAddRecord }) => {
   };
 
   return (
-    <div className="p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-xl font-bold text-brand-primary mb-4">
+    <div className="p-6 bg-white shadow-md rounded-lg flex flex-col justify-center items-center">
+      <h2 className="text-xl font-bold text-brand-primary mb-4 text-center">
         食事時間を記録する
       </h2>
-      <div className="flex space-x-4">
+      <div className="flex space-x-4 items-center">
         <button
           onClick={handleStart}
           className="bg-brand-secondary text-white font-bold py-2 px-4 rounded hover:bg-brand-accent"
@@ -88,10 +89,15 @@ const MealTracker = ({ onAddRecord }) => {
         >
           終了
         </button>
-        {startTime && (
-          <p className="mb-4 text-brand-secondary">開始時刻: {startTime}</p>
-        )}
       </div>
+      {startTime && (
+        <p className="mt-4 text-brand-secondary items-center">
+          開始時刻:{" "}
+          <span className="font-mono font-bold text-lg">
+            {startTime ? formatToLocalTime(startTime) : "データなし"}
+          </span>
+        </p>
+      )}
     </div>
   );
 };
