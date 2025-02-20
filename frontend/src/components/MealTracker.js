@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import { formatToLocalTime } from "../utils/time"; // フォーマット関数をインポート
+import { formatTime } from "../utils/time"; // フォーマット関数をインポート
 
 const getJstTimestampIso = () => {
-  const date = new Date();
-  date.setHours(date.getHours() + 9); // JSTへ変換
-  return date.toISOString();
+  return new Date().toISOString(); // UTC のまま取得
 };
 
 const MealTracker = ({ onAddRecord }) => {
@@ -12,13 +10,13 @@ const MealTracker = ({ onAddRecord }) => {
   const [message, setMessage] = useState("");
 
   const handleStart = () => {
-    const startTime = getJstTimestampIso() || ""; // ISO形式のを取得&デフォルト値（空文字列）設定
+    const startTime = getJstTimestampIso();
     setStartTime(startTime); // 状態として管理
-    setMessage(`開始時刻を記録しました: ${startTime}`);
+    setMessage(`開始時刻を記録しました: ${formatTime(startTime)}`);
   };
 
   const handleEnd = async () => {
-    const endTime = getJstTimestampIso() || ""; // ISO形式の終了時刻を取得&デフォルト値（空文字列）設定
+    const endTime = getJstTimestampIso();
 
     // ログ: リクエストボディを確認
     console.log("Request Body:", { start_time: startTime, end_time: endTime });
@@ -55,8 +53,8 @@ const MealTracker = ({ onAddRecord }) => {
         }分`
       );
       onAddRecord({
-        startTime: startTime,
-        endTime: endTime,
+        startTime,
+        endTime,
         duration: durationMinutes,
         interval: intervalMinutes,
       });
@@ -94,7 +92,7 @@ const MealTracker = ({ onAddRecord }) => {
         <p className="mt-4 text-brand-secondary items-center">
           開始時刻:{" "}
           <span className="font-mono font-bold text-lg">
-            {startTime ? formatToLocalTime(startTime) : "データなし"}
+            {startTime ? formatTime(startTime) : "データなし"}
           </span>
         </p>
       )}

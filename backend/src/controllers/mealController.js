@@ -24,9 +24,9 @@ const recordMeal = async (req, res) => {
       end_time,
     });
 
-    // JST で時刻を統一（変換の二重適用を防ぐ）
-    const startTimeJST = new Date(start_time);
-    const endTimeJST = new Date(end_time);
+    // UTC に統一（データベース保存用）
+    const startTimeUTC = new Date(start_time).toISOString();
+    const endTimeUTC = new Date(end_time).toISOString();
 
     // 直前の記録を取得して間隔を計算
     const previousMeal = await pool.query(
@@ -39,23 +39,21 @@ const recordMeal = async (req, res) => {
     let intervalMinutes = null;
     if (previousMeal.rows.length > 0) {
       const previousEndTime = new Date(previousMeal.rows[0].end_time);
-      const intervalMs = startTimeJST - previousEndTime; // getTime() を使わずに直接計算
-      intervalMinutes = Math.max(1, Math.round(intervalMs / 60000)); // 切り捨てから四捨五入に変更・最低でも1分にする
+      const intervalMs = new Date(startTimeUTC) - previousEndTime;
+      intervalMinutes = Math.max(1, Math.round(intervalMs / 60000));
     }
 
     // duration_minutes を計算
-    const durationMs = endTimeJST.getTime() - startTimeJST.getTime();
+    const durationMs = new Date(endTimeUTC) - new Date(startTimeUTC);
     const durationMinutes = Math.ceil(durationMs / 60000);
 
     console.log(
-      "Previous meal end time (JST):",
+      "Previous meal end time (UTC):",
       previousMeal.rows[0]?.end_time || "None"
     );
-    console.log("Current meal start time (JST):", startTimeJST);
+    console.log("Current meal start time (UTC):", startTimeUTC);
     console.log("Calculated interval_minutes:", intervalMinutes);
-
-    console.log("Final duration_minutes (formatted):", durationMinutes);
-    console.log("Final interval_minutes (formatted):", intervalMinutes);
+    console.log("Final duration_minutes:", durationMinutes);
 
     // データベースに保存
     const result = await pool.query(
@@ -63,8 +61,8 @@ const recordMeal = async (req, res) => {
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [
         req.user.user_id,
-        startTimeJST,
-        endTimeJST,
+        startTimeUTC,
+        endTimeUTC,
         durationMinutes,
         intervalMinutes !== null ? Math.floor(intervalMinutes) : 0,
       ]
@@ -79,15 +77,11 @@ const recordMeal = async (req, res) => {
         record_id: record.record_id,
         user_id: record.user_id,
         category_id: record.category_id,
-        start_time: record.start_time,
-        end_time: record.end_time,
-        duration_minutes:
-          record.duration_minutes !== null ? record.duration_minutes : 0,
-        interval_minutes:
-          record.interval_minutes !== null ? record.interval_minutes : 0,
-        created_at: new Date(record.created_at).toLocaleString("ja-JP", {
-          timeZone: "Asia/Tokyo",
-        }),
+        start_time: new Date(record.start_time).toISOString(), // UTCに統一
+        end_time: new Date(record.end_time).toISOString(), // UTCに統一
+        duration_minutes: record.duration_minutes ?? 0,
+        interval_minutes: record.interval_minutes ?? 0,
+        created_at: new Date(record.created_at).toISOString(), // UTCに統一
       },
     });
 
@@ -95,8 +89,6 @@ const recordMeal = async (req, res) => {
       status: "success",
       data: {
         ...record,
-        start_time: record.start_time,
-        end_time: record.end_time,
       },
     });
   } catch (err) {

@@ -1,6 +1,5 @@
 import React from "react";
-import { formatDate, formatTime } from "../utils/time";
-import { formatToLocalTime } from "../utils/time";
+import { formatTime } from "../utils/time";
 
 const MealRecordList = ({ records }) => {
   // データ形式の確認ログ
@@ -9,22 +8,19 @@ const MealRecordList = ({ records }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {records.map((record, index) => {
-        console.log(`Record ${index + 1}:`, record); // 各レコードのデータを確認
+        console.log(`Record ${index + 1}:`, record);
+        console.log("Raw start_time from server:", record.startTime);
+        console.log("Raw end_time from server:", record.endTime);
 
-        // デバッグログ: タイムゾーン変換結果を確認
-        console.log("Raw startTime (from server):", record.startTime);
-        console.log("Parsed UTC Date:", new Date(record.startTime));
-        console.log(
-          "Corrected startTime (JST):",
-          formatToLocalTime(record.startTime)
-        );
-        console.log(
-          "System time (JST):",
-          new Date().toLocaleTimeString("ja-JP", { timeZone: "Asia/Tokyo" })
-        );
-        console.log("Raw record from server:", record);
-        console.log("Duration (from server):", record.duration);
-        console.log("Interval (from server):", record.interval);
+        const formattedStartTime = record.startTime
+          ? formatTime(record.startTime)
+          : "データなし";
+        const formattedEndTime = record.endTime
+          ? formatTime(record.endTime)
+          : "データなし";
+
+        console.log("Formatted start_time (UTC HH:mm):", formattedStartTime);
+        console.log("Formatted end_time (UTC HH:mm):", formattedEndTime);
 
         return (
           <div
@@ -38,17 +34,13 @@ const MealRecordList = ({ records }) => {
             <p>
               <span className="font-semibold text-gray-600">開始時刻: </span>
               <span className="font-mono font-bold text-gray-800">
-                {record.startTime
-                  ? formatToLocalTime(record.startTime)
-                  : "データなし"}{" "}
+                {formattedStartTime}
               </span>
             </p>
             <p className="mb-2">
               <span className="font-semibold text-gray-600">終了時刻: </span>
               <span className="font-mono font-bold text-gray-800">
-                {record.endTime
-                  ? formatToLocalTime(record.endTime)
-                  : "データなし"}{" "}
+                {formattedEndTime}
               </span>
             </p>
             <p className="mb-2">
