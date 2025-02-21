@@ -100,6 +100,39 @@ const recordMeal = async (req, res) => {
   }
 };
 
+const getMealHistory = async (req, res) => {
+  const userId = req.user.user_id;
+  const { filterType } = req.query; // "daily", "weekly", "monthly"
+
+  let query = `SELECT * FROM meal_records WHERE user_id = $1`;
+  let params = [userId];
+
+  if (filterType === "daily") {
+    query += ` AND start_time >= NOW() - INTERVAL '1 day'`;
+  } else if (filterType === "weekly") {
+    query += ` AND start_time >= NOW() - INTERVAL '7 days'`;
+  } else if (filterType === "monthly") {
+    query += ` AND start_time >= NOW() - INTERVAL '1 month'`;
+  }
+
+  query += ` ORDER BY start_time DESC`;
+
+  try {
+    const result = await pool.query(query, params);
+    res.status(200).json({
+      status: "success",
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({
+      status: "error",
+      message: "サーバーエラーが発生しました。",
+    });
+  }
+};
+
 module.exports = {
   recordMeal,
+  getMealHistory,
 };

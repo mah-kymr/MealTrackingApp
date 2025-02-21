@@ -11,6 +11,7 @@ import RegisterPage from "./pages/RegisterPage";
 import CompletePage from "./pages/CompletePage";
 import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
+import MealHistoryPage from "./pages/MealHistoryPage";
 
 // 認証済みかどうかをチェックする関数
 const PrivateRoute = ({ children }) => {
@@ -44,6 +45,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <ProfilePage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <PrivateRoute>
+                  <MealHistoryPage />
                 </PrivateRoute>
               }
             />

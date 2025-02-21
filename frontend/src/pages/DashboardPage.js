@@ -22,6 +22,10 @@ const DashboardPage = () => {
     navigate("/profile");
   };
 
+  const handleGoToHistory = () => {
+    navigate("/history");
+  };
+
   // ローディング中の表示
   if (isLoading) {
     return (
@@ -70,6 +74,12 @@ const DashboardPage = () => {
                 : "ダッシュボード"}
             </h1>
             <div>
+              <button
+                onClick={handleGoToHistory}
+                className="mr-4 bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                履歴を見る
+              </button>
               <button
                 onClick={handleGoToProfile}
                 className="mr-4 bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"

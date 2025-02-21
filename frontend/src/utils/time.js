@@ -8,6 +8,18 @@ export function formatDate(date) {
   return new Date(date).toISOString().slice(0, 10); // UTCベース
 }
 
+export function formatToLocalDate(isoString) {
+  if (!isoString) return "不明";
+
+  const date = new Date(isoString); // UTC のまま解釈
+  date.setUTCHours(date.getUTCHours() + 9); // +9時間して JST に変換
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 export const formatTime = (isoString) => {
   if (!isoString) return "不明";
 
@@ -20,3 +32,6 @@ export const formatTime = (isoString) => {
     "0"
   )}`;
 };
+
+// formatToLocalTime を formatTime のエイリアスとして追加
+export const formatToLocalTime = formatTime;
