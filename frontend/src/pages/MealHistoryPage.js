@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { formatToLocalDate, formatToLocalTime } from "../utils/time";
+import { useNavigate } from "react-router-dom";
+import HistoryHeader from "../components/HistoryHeader";
+import MealHistoryList from "../components/MealHistoryList";
 
 const MealHistoryPage = () => {
   const [records, setRecords] = useState([]);
   const [filter, setFilter] = useState("daily"); // フィルターの初期値は「日別」
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMealHistory = async () => {
@@ -32,52 +35,33 @@ const MealHistoryPage = () => {
   }, [filter]); // フィルターが変更されたら再取得
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-4">食事記録の履歴</h2>
+    <div className="min-h-screen bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+        {/* コンポーネント・ヘッダー */}
+        <HistoryHeader onBack={() => navigate("/dashboard")} />
 
-        {/* フィルターセレクター */}
-        <div className="mb-4">
-          <label className="mr-4">フィルター:</label>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="p-2 border rounded"
-          >
-            <option value="daily">日別</option>
-            <option value="weekly">週別</option>
-            <option value="monthly">月別</option>
-          </select>
-        </div>
+        {/* メインコンテンツ */}
+        <div className="p-6 space-y-6">
+          {/* フィルターセレクター */}
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <label className="text-xl font-semibold text-brand-primary mb-4">
+              日別・週別・月別 を切り替える
+            </label>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="w-full p-2 border rounded bg-brand-background"
+            >
+              <option value="daily">日別</option>
+              <option value="weekly">週別</option>
+              <option value="monthly">月別</option>
+            </select>
+          </div>
 
-        {/* 食事記録一覧 */}
-        <div className="space-y-4">
-          {records.length === 0 ? (
-            <p className="text-gray-500">記録がありません</p>
-          ) : (
-            records.map((record) => (
-              <div key={record.record_id} className="border p-4 rounded">
-                <p>
-                  <strong>記録日:</strong>{" "}
-                  {formatToLocalDate(record.start_time)}
-                </p>
-                <p>
-                  <strong>開始時刻:</strong>{" "}
-                  {formatToLocalTime(record.start_time)}
-                </p>
-                <p>
-                  <strong>終了時刻:</strong>{" "}
-                  {formatToLocalTime(record.end_time)}
-                </p>
-                <p>
-                  <strong>所要時間:</strong> {record.duration_minutes} 分
-                </p>
-                <p>
-                  <strong>食事間隔:</strong> {record.interval_minutes} 分
-                </p>
-              </div>
-            ))
-          )}
+          {/* 食事記録一覧 */}
+          <div className="bg-white rounded-lg p-6 shadow-md">
+            <MealHistoryList records={records} />
+          </div>
         </div>
       </div>
     </div>

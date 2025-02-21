@@ -84,7 +84,7 @@ const DashboardPage = () => {
                 onClick={handleGoToProfile}
                 className="mr-4 bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
-                プロフィール管理
+                プロフィール
               </button>
               <button
                 onClick={handleLogout}

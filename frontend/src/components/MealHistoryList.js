@@ -12,30 +12,52 @@ const MealHistoryList = ({ records }) => {
         const intervalHours = Math.floor(record.interval_minutes / 60);
         const intervalMinutes = record.interval_minutes % 60;
         const formattedInterval =
-          record.interval_minutes && !isNaN(record.interval_minutes)
-            ? (
+          record.interval_minutes && !isNaN(record.interval_minutes) ? (
+            <>
+              {intervalHours > 0 && (
                 <>
-                  <span className="font-bold text-gray-800">{intervalHours}</span>
-                  <strong className="font-semibold text-brand-primary">時間</strong>{" "}
-                  <span className="font-mono font-bold text-gray-800">{intervalMinutes}</span>
-                  <strong className="font-semibold text-brand-primary">分</strong>
+                  <span className="font-bold text-gray-800">
+                    {intervalHours}
+                  </span>
+                  <strong className="font-semibold text-brand-primary">
+                    {" "}
+                    時間
+                  </strong>{" "}
                 </>
-              )
-            : "データなし";
+              )}
+              <span className="font-mono font-bold text-gray-800">
+                {intervalMinutes}
+              </span>
+              <strong className="font-semibold text-brand-primary"> 分</strong>
+            </>
+          ) : (
+            "データなし"
+          );
 
         const durationHours = Math.floor(record.duration_minutes / 60);
         const durationMinutes = record.duration_minutes % 60;
         const formattedDuration =
-          record.duration_minutes && !isNaN(record.duration_minutes)
-            ? (
+          record.duration_minutes && !isNaN(record.duration_minutes) ? (
+            <>
+              {durationHours > 0 && (
                 <>
-                  <span className="font-bold text-gray-800">{durationHours}</span>
-                  <strong className="font-semibold text-brand-primary">時間</strong>{" "}
-                  <span className="font-mono font-bold text-gray-800">{durationMinutes}</span>
-                  <strong className="font-semibold text-brand-primary">分</strong>
+                  <span className="font-bold text-gray-800">
+                    {durationHours}
+                  </span>
+                  <strong className="font-semibold text-brand-primary">
+                    {" "}
+                    時間
+                  </strong>{" "}
                 </>
-              )
-            : "データなし";
+              )}
+              <span className="font-mono font-bold text-gray-800">
+                {durationMinutes}
+              </span>
+              <strong className="font-semibold text-brand-primary"> 分</strong>
+            </>
+          ) : (
+            "データなし"
+          );
 
         return (
           <div
@@ -50,7 +72,7 @@ const MealHistoryList = ({ records }) => {
             </p>
             <p>
               <strong className="font-semibold text-brand-primary">
-                開始時刻:
+                開始時刻 :
               </strong>{" "}
               <span className="font-mono font-bold text-gray-800">
                 {formatToLocalTime(record.start_time)}
@@ -58,7 +80,7 @@ const MealHistoryList = ({ records }) => {
             </p>
             <p>
               <strong className="font-semibold text-brand-primary">
-                終了時刻:
+                終了時刻 :
               </strong>{" "}
               <span className="font-mono font-bold text-gray-800">
                 {formatToLocalTime(record.end_time)}
@@ -66,15 +88,19 @@ const MealHistoryList = ({ records }) => {
             </p>
             <p>
               <strong className="font-semibold text-brand-primary">
-                所要時間:
+                所要時間 :
               </strong>{" "}
-              {formattedDuration}
+              <span className="font-mono font-bold text-gray-800">
+                {formattedDuration}
+              </span>{" "}
             </p>
             <p>
               <strong className="font-semibold text-brand-primary">
-                食事間隔:
+                食事間隔 :
               </strong>{" "}
-              {formattedInterval}
+              <span className="font-mono font-bold text-gray-800">
+                {formattedInterval}
+              </span>{" "}
             </p>
           </div>
         );
