@@ -43,23 +43,26 @@ const MealHistoryPage = () => {
         {/* メインコンテンツ */}
         <div className="p-6 space-y-6">
           {/* フィルターセレクター */}
-          <div className="bg-white rounded-lg p-6 shadow-md">
-            <label className="text-xl font-semibold text-brand-primary mb-4">
+          <div className="bg-white rounded-lg p-6 shadow-md space-y-4">
+            <label className="text-xl font-semibold text-brand-primary mb-6">
               日別・週別・月別 を切り替える
             </label>
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="w-full p-2 border rounded bg-brand-background"
+              className="w-full p-2 border rounded bg-brand-background pt-2"
             >
-              <option value="daily">日別</option>
-              <option value="weekly">週別</option>
-              <option value="monthly">月別</option>
+              <option value="daily">日別 （当日の記録のみ表示）</option>
+              <option value="weekly">週別 （過去７日間の記録を表示）</option>
+              <option value="monthly">月別 （過去３０日間の記録を表示）</option>
             </select>
           </div>
 
           {/* 食事記録一覧 */}
-          <div className="bg-white rounded-lg p-6 shadow-md">
+          <div className="bg-white rounded-lg p-6 shadow-md space-y-4">
+            <label className="text-xl font-semibold text-brand-primary mb-6">
+              履歴一覧
+            </label>
             <MealHistoryList records={records} />
           </div>
         </div>
