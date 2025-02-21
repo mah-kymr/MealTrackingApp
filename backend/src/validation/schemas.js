@@ -68,6 +68,7 @@ const schemas = {
       }),
   }),
 
+  // パスワード変更用スキーマ
   updatePassword: customJoi.object({
     currentPassword: customJoi.string().required().messages({
       "any.required": "現在のパスワードは必須です。",
@@ -80,6 +81,24 @@ const schemas = {
         "string.pattern.base":
           "パスワードは8文字以上で、大文字、小文字、数字、特殊文字を含める必要があります",
         "any.required": "新しいパスワードは必須です。",
+      }),
+  }),
+
+  // 食事時間記録用スキーマ
+  mealRecord: customJoi.object({
+    start_time: customJoi.date().required().messages({
+      "any.required": "開始時刻は必須です。",
+      "date.base": "開始時刻は正しい日付形式で指定してください。",
+      "date.format": "開始時刻はISO 8601形式である必要があります。",
+    }),
+    end_time: customJoi
+      .date()
+      .greater(customJoi.ref("start_time"))
+      .required()
+      .messages({
+        "any.required": "終了時刻は必須です。",
+        "date.base": "終了時刻は正しい日付形式で指定してください。",
+        "date.greater": "終了時刻は開始時刻より後である必要があります。",
       }),
   }),
 };

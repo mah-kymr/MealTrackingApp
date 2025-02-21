@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import validationRules from "../shared/validationRules";
+import ConfirmationModal from "../components/ConfirmationModal";
+import ProfileHeader from "../components/ProfileHeader";
 
 const ProfilePage = () => {
-  const [username, setUsername] = useState(""); // 現在のユーザー名を管理
+  const [username, setUsername] = useState(""); // 現在のユーザー名
+  const [userId, setUserId] = useState(""); // ユーザーID
+  const [createdAt, setCreatedAt] = useState(""); // アカウント作成日
   const [newUsername, setNewUsername] = useState(""); // 新しいユーザー名
   const [currentPassword, setCurrentPassword] = useState(""); // 現在のパスワード
   const [newPassword, setNewPassword] = useState(""); // 新しいパスワード
@@ -25,6 +29,8 @@ const ProfilePage = () => {
         if (response.ok) {
           const data = await response.json();
           setUsername(data.user.username);
+          setCreatedAt(data.user.created_at); // 新しいプロパティをステートに保存
+          setUserId(data.user.user_id); // ユーザーIDも保存
         }
       } catch (error) {
         console.error("Failed to fetch profile:", error);
@@ -130,10 +136,6 @@ const ProfilePage = () => {
       console.error("Error updating password:", error);
     }
   };
-  // アカウント削除確認モーダルを開く
-  const handleDeleteAccountClick = () => {
-    setIsDeleting(true);
-  };
 
   // アカウントを削除
   const handleDeleteAccount = async () => {
@@ -157,24 +159,11 @@ const ProfilePage = () => {
     }
   };
 
-  // ダッシュボードに戻る
-  const handleBackToDashboard = () => {
-    navigate("/dashboard");
-  };
-
   return (
     <div className="min-h-screen bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-        {/* ヘッダー */}
-        <div className="bg-brand-secondary text-white px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">プロフィール管理</h1>
-          <button
-            onClick={handleBackToDashboard}
-            className="bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          >
-            ダッシュボードに戻る
-          </button>
-        </div>
+        {/* コンポーネント・ヘッダー */}
+        <ProfileHeader onBack={() => navigate("/dashboard")} />
 
         {/* プロフィール情報 */}
         <div className="p-6 space-y-6">
@@ -183,9 +172,24 @@ const ProfilePage = () => {
             <h2 className="text-xl font-semibold text-brand-primary mb-4">
               ユーザー情報
             </h2>
-            <p>
-              <strong>現在のユーザー名:</strong> {username}
-            </p>
+            <div className="grid grid-cols-2 gap-4">
+              {/* ユーザー名 */}
+              <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+                <p className="text-gray-500 text-sm">現在のユーザー名</p>
+                <p className="text-2xl font-bold text-brand-primary">
+                  {username || "未設定"}
+                </p>
+              </div>
+              {/* アカウント作成日 */}
+              <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+                <p className="text-gray-500 text-sm">アカウント作成日</p>
+                <p className="text-2xl font-bold text-brand-primary">
+                  {createdAt
+                    ? new Date(createdAt).toLocaleDateString()
+                    : "不明"}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* カード2: ユーザー名変更 */}
@@ -274,6 +278,7 @@ const ProfilePage = () => {
               更新
             </button>
           </div>
+
           {/* アカウント削除 */}
           <div className="bg-red-50 rounded-lg p-6 shadow-md border border-red-200">
             <h2 className="text-xl font-semibold text-red-600 mb-4">
@@ -283,35 +288,20 @@ const ProfilePage = () => {
               アカウントを削除すると、すべてのデータが失われます。この操作は元に戻せません。
             </p>
             <button
-              onClick={handleDeleteAccountClick}
+              onClick={() => setIsDeleting(true)}
               className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 mt-4"
             >
               アカウントを削除する
             </button>
           </div>
 
-          {/* 確認モーダル */}
-          {isDeleting && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="bg-white p-6 rounded-md shadow-md">
-                <p className="mb-4">本当にアカウントを削除しますか？</p>
-                <div className="flex justify-end space-x-4">
-                  <button
-                    onClick={() => setIsDeleting(false)}
-                    className="bg-gray-400 text-white py-2 px-4 rounded"
-                  >
-                    キャンセル
-                  </button>
-                  <button
-                    onClick={handleDeleteAccount}
-                    className="bg-red-600 text-white py-2 px-4 rounded"
-                  >
-                    削除する
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* コンポーネント"アカウント削除確認モーダル" */}
+          <ConfirmationModal
+            isOpen={isDeleting}
+            onClose={() => setIsDeleting(false)}
+            onConfirm={handleDeleteAccount}
+            message="本当にアカウントを削除しますか？"
+          />
         </div>
       </div>
     </div>

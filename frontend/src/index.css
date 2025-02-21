@@ -27,7 +27,7 @@ code {
     monospace;
 }
 
-@import url("https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Zen+Maru+Gothic&display=swap');
 
 body {
   font-family: "Zen Maru Gothic", sans-serif;

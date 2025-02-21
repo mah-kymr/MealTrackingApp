@@ -1,11 +1,27 @@
-const pool = require("../src/config/db"); // 正しいパスでdb.jsを読み込む
+// JSTのタイムスタンプを生成する
+export function getJstTimestamp(date = new Date()) {
+  const offset = 9 * 60; // JSTはUTC+9
+  const jstDate = new Date(date.getTime() + offset * 60000);
+  return jstDate.toISOString().slice(0, 19).replace("T", " ");
+}
 
-// PostgreSQLに接続して現在時刻を取得するテスト
-pool.query("SELECT NOW()", (err, res) => {
-  if (err) {
-    console.error("Database connection error:", err); // エラー発生時
-  } else {
-    console.log("Database connected at:", res.rows[0].now); // 接続成功時に現在時刻を表示
-  }
-  pool.end(); // 接続を終了
-});
+// ISO文字列（UTC形式）をJSTの時間に変換
+export const formatToLocalTime = (isoString) => {
+  if (!isoString) return "不明";
+
+  // UTC形式を基準に解析
+  const utcDate = new Date(isoString);
+
+  // JSTに変換
+  const jstTime = utcDate.getTime() + 9 * 60 * 60 * 1000;
+  const jstDate = new Date(jstTime);
+
+  // JSTの時間をフォーマット
+  const options = {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  };
+  return jstDate.toLocaleTimeString("ja-JP", options);
+};
