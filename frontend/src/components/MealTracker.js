@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { MealContext } from "../context/MealContext";
 import { formatTime } from "../utils/time"; // フォーマット関数をインポート
 
 const getJstTimestampIso = () => {
@@ -8,6 +9,8 @@ const getJstTimestampIso = () => {
 const MealTracker = ({ onAddRecord }) => {
   const [startTime, setStartTime] = useState(null);
   const [message, setMessage] = useState("");
+  const { categories = [] } = useContext(MealContext); // categories のデフォルト値を [] に設定
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   const handleStart = () => {
     const startTime = getJstTimestampIso();
@@ -16,10 +19,19 @@ const MealTracker = ({ onAddRecord }) => {
   };
 
   const handleEnd = async () => {
+    if (!selectedCategory) {
+      alert("カテゴリを選択してください");
+      return;
+    }
+
     const endTime = getJstTimestampIso();
 
     // ログ: リクエストボディを確認
-    console.log("Request Body:", { start_time: startTime, end_time: endTime });
+    console.log("Request Body:", {
+      start_time: startTime,
+      end_time: endTime,
+      category_id: selectedCategory,
+    });
 
     try {
       const response = await fetch("/api/v1/meal", {
@@ -28,7 +40,11 @@ const MealTracker = ({ onAddRecord }) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ start_time: startTime, end_time: endTime }),
+        body: JSON.stringify({
+          start_time: startTime,
+          end_time: endTime,
+          category_id: selectedCategory, // 修正：カテゴリを送信
+        }),
       });
 
       const responseData = await response.json();
@@ -53,16 +69,18 @@ const MealTracker = ({ onAddRecord }) => {
         }分`
       );
       onAddRecord({
-        startTime,
-        endTime,
+        start_time: startTime,
+        end_time: endTime,
+        category_id: selectedCategory,
         duration: durationMinutes,
         interval: intervalMinutes,
       });
 
       setStartTime(null);
+      setSelectedCategory(""); // 選択したカテゴリをリセット
     } catch (error) {
       console.error("Error saving meal record:", error);
-      setMessage("記録の保存に失敗しました");
+      setMessage(`記録の保存に失敗しました: ${error.message}`);
     }
   };
 
@@ -71,6 +89,24 @@ const MealTracker = ({ onAddRecord }) => {
       <h2 className="text-xl font-bold text-brand-primary mb-4 text-center">
         食事時間を記録する
       </h2>
+
+      <div className="p-4 border rounded shadow-md bg-white">
+        {/* カテゴリ選択 */}
+        <label className="block mb-2 font-semibold">食事の種類:</label>
+        <select
+          className="p-2 border rounded w-full"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(parseInt(e.target.value, 10))}
+        >
+          <option value="">カテゴリを選択</option>
+          {categories.map((category) => (
+            <option key={category.category_id} value={category.category_id}>
+              {category.category_name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="mt-6"></div>
       <div className="flex space-x-4 items-center">
         <button
           onClick={handleStart}
@@ -92,9 +128,13 @@ const MealTracker = ({ onAddRecord }) => {
         <p className="mt-4 text-brand-secondary items-center">
           開始時刻:{" "}
           <span className="font-mono font-bold text-lg">
-            {startTime ? formatTime(startTime) : "データなし"}
+            {formatTime(startTime)}
           </span>
         </p>
+      )}
+
+      {message && (
+        <p className="mt-2 text-brand-accent font-semibold">{message}</p>
       )}
     </div>
   );

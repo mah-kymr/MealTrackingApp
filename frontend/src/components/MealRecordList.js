@@ -1,5 +1,5 @@
 import React from "react";
-import { formatTime } from "../utils/time";
+import { formatToLocalTime } from "../utils/time";
 
 const MealRecordList = ({ records }) => {
   // データ形式の確認ログ
@@ -12,12 +12,14 @@ const MealRecordList = ({ records }) => {
         console.log("Raw start_time from server:", record.startTime);
         console.log("Raw end_time from server:", record.endTime);
 
-        const formattedStartTime = record.startTime
-          ? formatTime(record.startTime)
-          : "データなし";
-        const formattedEndTime = record.endTime
-          ? formatTime(record.endTime)
-          : "データなし";
+        const formattedStartTime =
+          record.start_time && record.start_time !== "null"
+            ? formatToLocalTime(record.start_time)
+            : "記録なし";
+        const formattedEndTime =
+          record.end_time && record.end_time !== "null"
+            ? formatToLocalTime(record.end_time)
+            : "記録なし";
 
         console.log("Formatted start_time (UTC HH:mm):", formattedStartTime);
         console.log("Formatted end_time (UTC HH:mm):", formattedEndTime);

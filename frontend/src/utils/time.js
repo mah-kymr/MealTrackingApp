@@ -33,5 +33,22 @@ export const formatTime = (isoString) => {
   )}`;
 };
 
-// formatToLocalTime を formatTime のエイリアスとして追加
-export const formatToLocalTime = formatTime;
+export const formatToLocalTime = (isoString) => {
+  if (!isoString || isoString === "null") return "記録なし";
+
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) throw new Error("Invalid date");
+
+    const jstHours = (date.getUTCHours() + 9) % 24;
+    const jstMinutes = date.getUTCMinutes();
+
+    return `${String(jstHours).padStart(2, "0")}:${String(jstMinutes).padStart(
+      2,
+      "0"
+    )}`;
+  } catch (error) {
+    console.error("Error formatting time:", error);
+    return "記録なし";
+  }
+};

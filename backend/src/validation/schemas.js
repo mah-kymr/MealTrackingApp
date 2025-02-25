@@ -100,6 +100,11 @@ const schemas = {
         "date.base": "終了時刻は正しい日付形式で指定してください。",
         "date.greater": "終了時刻は開始時刻より後である必要があります。",
       }),
+    category_id: customJoi.number().integer().required().messages({
+      "any.required": "カテゴリIDは必須です。",
+      "number.base": "カテゴリIDは数値である必要があります。",
+      "number.integer": "カテゴリIDは整数である必要があります。",
+    }),
   }),
 };
 

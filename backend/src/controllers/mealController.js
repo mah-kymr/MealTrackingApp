@@ -2,7 +2,7 @@ const pool = require("../config/db");
 const schemas = require("../validation/schemas");
 
 const recordMeal = async (req, res) => {
-  const { start_time, end_time } = req.body;
+  const { start_time, end_time, category_id } = req.body;
 
   // バリデーションを実行
   const { error } = schemas.mealRecord.validate(req.body);
@@ -22,6 +22,7 @@ const recordMeal = async (req, res) => {
       user_id: req.user.user_id,
       start_time,
       end_time,
+      category_id,
     });
 
     // UTC に統一（データベース保存用）
@@ -57,10 +58,11 @@ const recordMeal = async (req, res) => {
 
     // データベースに保存
     const result = await pool.query(
-      `INSERT INTO meal_records (user_id, start_time, end_time, duration_minutes, interval_minutes)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      `INSERT INTO meal_records (user_id, category_id, start_time, end_time, duration_minutes, interval_minutes)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
       [
         req.user.user_id,
+        category_id,
         startTimeUTC,
         endTimeUTC,
         durationMinutes,
@@ -77,11 +79,17 @@ const recordMeal = async (req, res) => {
         record_id: record.record_id,
         user_id: record.user_id,
         category_id: record.category_id,
-        start_time: new Date(record.start_time).toISOString(), // UTCに統一
-        end_time: new Date(record.end_time).toISOString(), // UTCに統一
+        start_time: record.start_time
+          ? new Date(record.start_time).toISOString()
+          : null,
+        end_time: record.end_time
+          ? new Date(record.end_time).toISOString()
+          : null,
         duration_minutes: record.duration_minutes ?? 0,
         interval_minutes: record.interval_minutes ?? 0,
-        created_at: new Date(record.created_at).toISOString(), // UTCに統一
+        created_at: record.created_at
+          ? new Date(record.created_at).toISOString()
+          : null,
       },
     });
 
@@ -132,7 +140,23 @@ const getMealHistory = async (req, res) => {
   }
 };
 
+// 食事カテゴリを取得
+const getMealCategories = async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM Meal_Categories ORDER BY category_id"
+    );
+
+    res.status(200).json({ status: "success", data: result.rows });
+  } catch (error) {
+    console.error("Error fetching meal categories:", error);
+
+    res.status(500).json({ status: "error", message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   recordMeal,
   getMealHistory,
+  getMealCategories,
 };

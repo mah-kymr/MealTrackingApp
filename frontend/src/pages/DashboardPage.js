@@ -7,7 +7,7 @@ import MealRecordList from "../components/MealRecordList";
 
 const DashboardPage = () => {
   // ユーザー情報とローディング状態を管理
-  const { records, addRecord } = useContext(MealContext);
+  const { records, addRecord, categories } = useContext(MealContext);
   const { userData, isLoading, error } = useUserProfile();
 
   // ページ遷移のためのナビゲーションフック
@@ -97,9 +97,12 @@ const DashboardPage = () => {
 
           <div className="p-6 space-y-6">
             {/* 記録操作区画 */}
-            <MealTracker onAddRecord={addRecord} />
+            <MealTracker
+              onAddRecord={addRecord}
+              categories={categories || []}
+            />
             {/* 記録結果区画 */}
-            <MealRecordList records={records} />
+            <MealRecordList records={records} categories={categories || []} />
           </div>
         </div>
       </div>
