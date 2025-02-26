@@ -38,7 +38,9 @@ export const MealProvider = ({ children }) => {
   // APIから食事カテゴリを取得する関数
   useEffect(() => {
     const fetchCategories = async () => {
+      console.log("Fetching meal categories..."); // デバッグログ
       const categoryData = await fetchMealCategories();
+      console.log("Fetched categories:", categoryData); // デバッグログ
       setCategories(categoryData);
     };
 

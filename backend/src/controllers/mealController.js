@@ -25,6 +25,20 @@ const recordMeal = async (req, res) => {
       category_id,
     });
 
+    // 🔥 修正: `category_id` が Meal_Categories に存在するか確認
+    const categoryCheck = await pool.query(
+      `SELECT category_id FROM Meal_Categories WHERE category_id = $1`,
+      [category_id]
+    );
+
+    if (categoryCheck.rows.length === 0) {
+      console.error("Invalid category_id:", category_id);
+      return res.status(400).json({
+        status: "error",
+        message: "無効なカテゴリIDです。",
+      });
+    }
+
     // UTC に統一（データベース保存用）
     const startTimeUTC = new Date(start_time).toISOString();
     const endTimeUTC = new Date(end_time).toISOString();
