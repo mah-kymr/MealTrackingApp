@@ -169,8 +169,91 @@ const getMealCategories = async (req, res) => {
   }
 };
 
+const updateMealRecord = async (req, res) => {
+  const { record_id } = req.params;
+  const { start_time, end_time, category_id } = req.body;
+
+  try {
+    // 直前の記録を取得して食事間隔を再計算
+    const previousMeal = await pool.query(
+      `SELECT end_time FROM meal_records 
+       WHERE user_id = $1 AND record_id != $2
+       ORDER BY end_time DESC LIMIT 1`,
+      [req.user.user_id, record_id]
+    );
+
+    let intervalMinutes = null;
+    if (previousMeal.rows.length > 0) {
+      const previousEndTime = new Date(previousMeal.rows[0].end_time);
+      const intervalMs = new Date(start_time) - previousEndTime;
+      intervalMinutes = Math.max(1, Math.round(intervalMs / 60000));
+    }
+
+    const durationMs = new Date(end_time) - new Date(start_time);
+    const durationMinutes = Math.ceil(durationMs / 60000);
+
+    const result = await pool.query(
+      `UPDATE meal_records 
+       SET start_time = $1, end_time = $2, category_id = $3, 
+           duration_minutes = $4, interval_minutes = $5 
+       WHERE record_id = $6 AND user_id = $7 
+       RETURNING *`,
+      [
+        start_time,
+        end_time,
+        category_id,
+        durationMinutes,
+        intervalMinutes,
+        record_id,
+        req.user.user_id,
+      ]
+    );
+
+    if (result.rowCount === 0) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "記録が見つかりません" });
+    }
+
+    res.status(200).json({ status: "success", data: result.rows[0] });
+  } catch (error) {
+    console.error("Error updating meal record:", error);
+    res
+      .status(500)
+      .json({ status: "error", message: "サーバーエラーが発生しました" });
+  }
+};
+
+const deleteMealRecord = async (req, res) => {
+  const { record_id } = req.params;
+
+  try {
+    const result = await pool.query(
+      "DELETE FROM meal_records WHERE record_id = $1 AND user_id = $2 RETURNING *",
+      [record_id, req.user.user_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "記録が見つかりません" });
+    }
+
+    res
+      .status(200)
+      .json({ status: "success", message: "記録が削除されました" });
+  } catch (error) {
+    console.error("Error deleting meal record:", error);
+    res
+      .status(500)
+      .json({ status: "error", message: "サーバーエラーが発生しました" });
+  }
+};
+
 module.exports = {
   recordMeal,
   getMealHistory,
   getMealCategories,
+  updateMealRecord,
+  deleteMealRecord,
 };

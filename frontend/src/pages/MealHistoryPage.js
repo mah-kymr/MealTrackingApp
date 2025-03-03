@@ -46,6 +46,55 @@ const MealHistoryPage = () => {
     fetchCategories();
   }, []);
 
+  // 記録を削除する
+  const handleDeleteRecord = async (record_id) => {
+    try {
+      const response = await fetch(`/api/v1/meal/${record_id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete record");
+      }
+
+      setRecords((prevRecords) =>
+        prevRecords.filter((r) => r.record_id !== record_id)
+      );
+    } catch (error) {
+      console.error("Error deleting meal record:", error);
+    }
+  };
+
+  // 記録を更新する
+  const handleUpdateRecord = async (record_id, updatedData) => {
+    try {
+      const response = await fetch(`/api/v1/meal/${record_id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update record");
+      }
+
+      const updatedRecord = await response.json();
+      setRecords((prevRecords) =>
+        prevRecords.map((record) =>
+          record.record_id === record_id ? updatedRecord.data : record
+        )
+      );
+    } catch (error) {
+      console.error("Error updating meal record:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
@@ -75,7 +124,12 @@ const MealHistoryPage = () => {
             <label className="text-xl font-semibold text-brand-primary mb-6">
               履歴一覧
             </label>
-            <MealHistoryList records={records} categories={categories} />
+            <MealHistoryList
+              records={records}
+              categories={categories}
+              onUpdate={handleUpdateRecord}
+              onDelete={handleDeleteRecord}
+            />
           </div>
         </div>
       </div>
