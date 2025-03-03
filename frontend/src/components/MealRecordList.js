@@ -1,9 +1,17 @@
-import React from "react";
+import React, { useContext } from "react";
 import { formatToLocalTime } from "../utils/time";
+import { MealContext } from "../context/MealContext";
 
 const MealRecordList = ({ records }) => {
-  // データ形式の確認ログ
   console.log("Meal records received from server:", records); // 全体のデータを確認
+
+  const { categories } = useContext(MealContext); // カテゴリ一覧を取得
+
+  // category_id を category_name に変換する関数
+  const getCategoryName = (category_id) => {
+    const category = categories.find((c) => c.category_id === category_id);
+    return category ? category.category_name : "不明";
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -33,6 +41,14 @@ const MealRecordList = ({ records }) => {
               食事記録 #{record.record_id || index + 1}
             </h3>
             <p className="mb-2"></p>
+            <p>
+              <span className="font-semibold text-gray-600">
+                食事カテゴリ:{" "}
+              </span>
+              <span className="font-mono font-bold text-gray-800">
+                {getCategoryName(record.category_id)}
+              </span>
+            </p>
             <p>
               <span className="font-semibold text-gray-600">開始時刻: </span>
               <span className="font-mono font-bold text-gray-800">

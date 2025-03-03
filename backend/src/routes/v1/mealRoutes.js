@@ -16,16 +16,15 @@ router.post(
   "/",
   validate("mealRecord"),
   (req, res, next) => {
-    console.log("Passed authentication and validation");
+    console.log("✅ Passed authentication and validation");
     next();
   },
   recordMeal
 );
-
-// 記録一覧API（履歴取得）
+// **記録一覧API（履歴取得）**
 router.get("/history", getMealHistory);
 
-// カテゴリ一覧取得API
+// **カテゴリ一覧取得API**
 router.get("/categories", getMealCategories);
 
 module.exports = router;

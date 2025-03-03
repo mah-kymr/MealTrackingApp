@@ -2,19 +2,36 @@
 
 export const fetchMealCategories = async () => {
   try {
+    await new Promise((resolve) => setTimeout(resolve, 100)); // 遅延を加えて `localStorage` を確実に取得
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.warn(
+        "⚠️ トークンが取得できませんでした。ログインを確認してください。"
+      );
+      return [];
+    }
+
     const response = await fetch("/api/v1/meal/categories", {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     });
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.message || "Failed to fetch categories");
+    if (response.status === 401) {
+      console.warn(
+        "⚠️ 401 Unauthorized: トークンが無効か、ログインが必要です。"
+      );
+      return [];
     }
 
-    return result.data; // カテゴリ一覧を返す
+    const result = await response.json();
+    if (!response.ok)
+      throw new Error(result.message || "Failed to fetch categories");
+
+    console.log("✅ カテゴリ取得成功:", result.data);
+    return result.data;
   } catch (error) {
     console.error("Error fetching meal categories:", error);
     return [];

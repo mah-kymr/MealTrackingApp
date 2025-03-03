@@ -9,7 +9,7 @@ const getJstTimestampIso = () => {
 const MealTracker = ({ onAddRecord }) => {
   const [startTime, setStartTime] = useState(null);
   const [message, setMessage] = useState("");
-  const { categories = [] } = useContext(MealContext); // categories のデフォルト値を [] に設定
+  const { categories, isLoadingCategories } = useContext(MealContext);
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const handleStart = () => {
@@ -23,10 +23,14 @@ const MealTracker = ({ onAddRecord }) => {
       alert("カテゴリを選択してください");
       return;
     }
+    if (typeof onAddRecord !== "function") {
+      console.error(
+        "❌ onAddRecord is not a function. Props might be missing."
+      );
+      return;
+    }
 
     const endTime = getJstTimestampIso();
-
-    // ログ: リクエストボディを確認
     console.log("Request Body:", {
       start_time: startTime,
       end_time: endTime,
@@ -68,6 +72,7 @@ const MealTracker = ({ onAddRecord }) => {
           durationMinutes % 60
         }分`
       );
+
       onAddRecord({
         start_time: startTime,
         end_time: endTime,
@@ -93,18 +98,24 @@ const MealTracker = ({ onAddRecord }) => {
       <div className="p-4 border rounded shadow-md bg-white">
         {/* カテゴリ選択 */}
         <label className="block mb-2 font-semibold">食事の種類:</label>
-        <select
-          className="p-2 border rounded w-full"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(parseInt(e.target.value, 10))}
-        >
-          <option value="">カテゴリを選択</option>
-          {categories.map((category) => (
-            <option key={category.category_id} value={category.category_id}>
-              {category.category_name}
-            </option>
-          ))}
-        </select>
+        {isLoadingCategories ? (
+          <p>読み込み中...</p>
+        ) : categories && categories.length > 0 ? (
+          <select
+            className="p-2 border rounded w-full"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(parseInt(e.target.value, 10))}
+          >
+            <option value="">カテゴリを選択</option>
+            {categories.map((category) => (
+              <option key={category.category_id} value={category.category_id}>
+                {category.category_name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <p>カテゴリなし</p>
+        )}
       </div>
       <div className="mt-6"></div>
       <div className="flex space-x-4 items-center">

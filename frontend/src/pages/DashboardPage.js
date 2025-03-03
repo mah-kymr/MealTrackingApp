@@ -101,6 +101,7 @@ const DashboardPage = () => {
               onAddRecord={addRecord}
               categories={categories || []}
             />
+
             {/* 記録結果区画 */}
             <MealRecordList records={records} categories={categories || []} />
           </div>
