@@ -1,10 +1,16 @@
 import React from "react";
 import { formatToLocalDate, formatToLocalTime } from "../utils/time";
 
-const MealHistoryList = ({ records }) => {
+const MealHistoryList = ({ records, categories }) => {
   if (!records || records.length === 0) {
     return <p className="text-gray-500">記録がありません</p>;
   }
+
+  // category_id から category_name を取得する関数
+  const getCategoryName = (category_id) => {
+    const category = categories.find((c) => c.category_id === category_id);
+    return category ? category.category_name : "不明";
+  };
 
   return (
     <div className="space-y-4">
@@ -68,6 +74,14 @@ const MealHistoryList = ({ records }) => {
               <strong>記録日:</strong>{" "}
               <span className="font-mono font-bold text-gray-800">
                 {formatToLocalDate(record.start_time)}
+              </span>
+            </p>
+            <p>
+              <strong className="font-semibold text-brand-primary">
+                食事カテゴリ:
+              </strong>{" "}
+              <span className="font-mono font-bold text-gray-800">
+                {getCategoryName(record.category_id)}
               </span>
             </p>
             <p>

@@ -2,12 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HistoryHeader from "../components/HistoryHeader";
 import MealHistoryList from "../components/MealHistoryList";
+import { fetchMealCategories } from "../services/meal";
 
 const MealHistoryPage = () => {
   const [records, setRecords] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [filter, setFilter] = useState("daily"); // フィルターの初期値は「日別」
   const navigate = useNavigate();
 
+  // 食事履歴を取得
   useEffect(() => {
     const fetchMealHistory = async () => {
       try {
@@ -34,10 +37,19 @@ const MealHistoryPage = () => {
     fetchMealHistory();
   }, [filter]); // フィルターが変更されたら再取得
 
+  // カテゴリを取得
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const data = await fetchMealCategories();
+      setCategories(data);
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <div className="min-h-screen bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-        {/* コンポーネント・ヘッダー */}
+        {/* ヘッダー */}
         <HistoryHeader onBack={() => navigate("/dashboard")} />
 
         {/* メインコンテンツ */}
@@ -63,7 +75,7 @@ const MealHistoryPage = () => {
             <label className="text-xl font-semibold text-brand-primary mb-6">
               履歴一覧
             </label>
-            <MealHistoryList records={records} />
+            <MealHistoryList records={records} categories={categories} />
           </div>
         </div>
       </div>
