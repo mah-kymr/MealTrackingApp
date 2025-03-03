@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 
+// JST に変換する関数
 const formatDateTimeLocal = (isoString) => {
   const date = new Date(isoString);
-  return date.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm に変換
+  date.setHours(date.getHours() + 9); // UTC → JST に変換
+  return date.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm 形式
 };
 
 const EditMealModal = ({ record, categories, onClose, onUpdate }) => {
@@ -13,9 +15,16 @@ const EditMealModal = ({ record, categories, onClose, onUpdate }) => {
   const [categoryId, setCategoryId] = useState(record.category_id);
 
   const handleSubmit = async () => {
+    // 送信時には JST から UTC に戻す
+    const startUTC = new Date(startTime);
+    startUTC.setHours(startUTC.getHours() - 9); // JST → UTC に戻す
+
+    const endUTC = new Date(endTime);
+    endUTC.setHours(endUTC.getHours() - 9); // JST → UTC に戻す
+
     await onUpdate(record.record_id, {
-      start_time: new Date(startTime).toISOString(), // ISO 8601 に変換
-      end_time: new Date(endTime).toISOString(),
+      start_time: startUTC.toISOString(),
+      end_time: endUTC.toISOString(),
       category_id: categoryId,
     });
     onClose();
