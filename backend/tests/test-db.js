@@ -1,113 +1,189 @@
-import React, { useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUserProfile } from "../hooks/useUserProfile";
-import { MealContext } from "../context/MealContext";
-import MealTracker from "../components/MealTracker";
-import MealRecordList from "../components/MealRecordList";
+const pool = require("../config/db");
+const schemas = require("../validation/schemas");
 
-const DashboardPage = () => {
-  // ユーザー情報とローディング状態を管理
-  const { records, addRecord, categories } = useContext(MealContext);
-  const { userData, isLoading, error } = useUserProfile();
+const recordMeal = async (req, res) => {
+  const { start_time, end_time, category_id } = req.body;
 
-  // ページ遷移のためのナビゲーションフック
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
-
-  const handleGoToProfile = () => {
-    navigate("/profile");
-  };
-
-  const handleGoToHistory = () => {
-    navigate("/history");
-  };
-
-  // ローディング中の表示
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-brand-background">
-        <div className="text-center">
-          <p className="text-xl text-brand-secondary">読み込み中...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // エラー発生時の表示
+  // バリデーションを実行
+  const { error } = schemas.mealRecord.validate(req.body);
   if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <h2 className="text-center text-2xl font-bold text-brand-accent mb-4">
-              エラーが発生しました
-            </h2>
-            <p className="text-center text-gray-700">{error}</p>
-            <div className="flex justify-center mt-6">
-              <button
-                onClick={handleLogout}
-                className="bg-brand-primary hover:bg-brand-secondary text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                ログアウト
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    console.error("Validation Error Details:", error.details);
+    return res.status(400).json({
+      status: "error",
+      errors: error.details.map((detail) => ({
+        field: detail.path[0],
+        message: detail.message,
+      })),
+    });
   }
 
-  // メインのダッシュボード画面
-  return (
-    <div className="min-h-screen bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          {/* ダッシュボードヘッダー */}
-          <div className="bg-brand-secondary text-white px-6 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold">
-              {userData?.username
-                ? `${userData.username} さんの記録`
-                : "ダッシュボード"}
-            </h1>
-            <div>
-              <button
-                onClick={handleGoToHistory}
-                className="mr-4 bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                履歴を見る
-              </button>
-              <button
-                onClick={handleGoToProfile}
-                className="mr-4 bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                プロフィール
-              </button>
-              <button
-                onClick={handleLogout}
-                className="bg-white text-brand-primary hover:bg-brand-background font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                ログアウト
-              </button>
-            </div>
-          </div>
+  try {
+    console.log("🔍 受け取ったデータ:", { start_time, end_time, category_id });
 
-          <div className="p-6 space-y-6">
-            {/* 記録操作区画 */}
-            <MealTracker
-              onAddRecord={addRecord}
-              categories={categories || []}
-            />
-            {/* 記録結果区画 */}
-            <MealRecordList records={records} categories={categories || []} />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+    // 🔥 修正: `category_id` が Meal_Categories に存在するか確認
+    const categoryCheck = await pool.query(
+      `SELECT category_id FROM Meal_Categories WHERE category_id = $1`,
+      [category_id]
+    );
+
+    if (categoryCheck.rows.length === 0) {
+      console.error("Invalid category_id:", category_id);
+      return res.status(400).json({
+        status: "error",
+        message: "無効なカテゴリIDです。",
+      });
+    }
+
+    const startTimeUTC = start_time; // そのままDBに保存
+    const endTimeUTC = end_time;
+
+    // 直前の記録を取得して間隔を計算
+    const previousMeal = await pool.query(
+      `SELECT end_time FROM meal_records 
+       WHERE user_id = $1 
+       ORDER BY end_time DESC LIMIT 1`,
+      [req.user.user_id]
+    );
+
+    let intervalMinutes = null;
+    if (previousMeal.rows.length > 0) {
+      const previousEndTime = new Date(previousMeal.rows[0].end_time);
+      const intervalMs = new Date(startTimeUTC) - previousEndTime;
+      intervalMinutes = Math.max(1, Math.round(intervalMs / 60000));
+    }
+
+    // duration_minutes を計算
+    const durationMs = new Date(endTimeUTC) - new Date(startTimeUTC);
+    const durationMinutes = Math.ceil(durationMs / 60000);
+
+    console.log("⏳ 計算結果: ", { intervalMinutes, durationMinutes });
+
+    // データベースに保存
+    const result = await pool.query(
+      `INSERT INTO meal_records (user_id, category_id, start_time, end_time, duration_minutes, interval_minutes)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [
+        req.user.user_id,
+        category_id,
+        startTimeUTC,
+        endTimeUTC,
+        durationMinutes,
+        intervalMinutes !== null ? Math.floor(intervalMinutes) : 0,
+      ]
+    );
+
+    const record = result.rows[0];
+    console.log("📄 DBに保存されたデータ:", record);
+
+    res.status(201).json({
+      status: "success",
+      data: record, // 🔥 修正: そのまま返す
+    });
+  } catch (err) {
+    console.error("Database Error:", err);
+    res.status(500).json({
+      status: "error",
+      message: "サーバーエラーが発生しました。管理者にお問い合わせください。",
+    });
+  }
 };
 
-export default DashboardPage;
+const updateMealRecord = async (req, res) => {
+  const { record_id } = req.params;
+  const { start_time, end_time, category_id } = req.body;
+
+  try {
+    console.log("✏️ 更新リクエスト:", { start_time, end_time, category_id });
+
+    // 直前の記録を取得して食事間隔を再計算
+    const previousMeal = await pool.query(
+      `SELECT end_time FROM meal_records 
+       WHERE user_id = $1 AND record_id != $2
+       ORDER BY end_time DESC LIMIT 1`,
+      [req.user.user_id, record_id]
+    );
+
+    let intervalMinutes = null;
+    if (previousMeal.rows.length > 0) {
+      const previousEndTime = new Date(previousMeal.rows[0].end_time);
+      const intervalMs = new Date(start_time) - previousEndTime;
+      intervalMinutes = Math.max(1, Math.round(intervalMs / 60000));
+    }
+
+    const durationMs = new Date(end_time) - new Date(start_time);
+    const durationMinutes = Math.ceil(durationMs / 60000);
+
+    console.log("⏳ 更新後の計算結果: ", { intervalMinutes, durationMinutes });
+
+    const result = await pool.query(
+      `UPDATE meal_records 
+       SET start_time = $1, end_time = $2, category_id = $3, 
+           duration_minutes = $4, interval_minutes = $5 
+       WHERE record_id = $6 AND user_id = $7 
+       RETURNING *`,
+      [
+        start_time,
+        end_time,
+        category_id,
+        durationMinutes,
+        intervalMinutes,
+        record_id,
+        req.user.user_id,
+      ]
+    );
+
+    if (result.rowCount === 0) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "記録が見つかりません" });
+    }
+
+    console.log("✅ 更新後のデータ:", result.rows[0]);
+
+    res.status(200).json({ status: "success", data: result.rows[0] });
+  } catch (error) {
+    console.error("Error updating meal record:", error);
+    res
+      .status(500)
+      .json({ status: "error", message: "サーバーエラーが発生しました" });
+  }
+};
+
+const getMealHistory = async (req, res) => {
+  const userId = req.user.user_id;
+  const { filterType } = req.query; // "daily", "weekly", "monthly"
+
+  let query = `SELECT * FROM meal_records WHERE user_id = $1`;
+  let params = [userId];
+
+  if (filterType === "daily") {
+    query += ` AND start_time >= NOW() - INTERVAL '1 day'`;
+  } else if (filterType === "weekly") {
+    query += ` AND start_time >= NOW() - INTERVAL '7 days'`;
+  } else if (filterType === "monthly") {
+    query += ` AND start_time >= NOW() - INTERVAL '1 month'`;
+  }
+
+  query += ` ORDER BY start_time DESC`;
+
+  try {
+    const result = await pool.query(query, params);
+    console.log("📜 取得した履歴:", result.rows);
+    res.status(200).json({
+      status: "success",
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({
+      status: "error",
+      message: "サーバーエラーが発生しました。",
+    });
+  }
+};
+
+module.exports = {
+  recordMeal,
+  getMealHistory,
+  updateMealRecord,
+};

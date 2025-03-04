@@ -39,9 +39,8 @@ const recordMeal = async (req, res) => {
       });
     }
 
-    // UTC に統一（データベース保存用）
-    const startTimeUTC = new Date(start_time).toISOString();
-    const endTimeUTC = new Date(end_time).toISOString();
+    const startTimeUTC = start_time; // そのままDBに保存
+    const endTimeUTC = end_time;
 
     // 直前の記録を取得して間隔を計算
     const previousMeal = await pool.query(

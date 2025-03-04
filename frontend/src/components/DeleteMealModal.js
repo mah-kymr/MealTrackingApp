@@ -40,32 +40,44 @@ const DeleteMealModal = ({ record, categories = [], onClose, onDelete }) => {
         <h2 className="text-xl font-semibold text-brand-primary mb-4">
           記録の削除
         </h2>
-        <p className="mb-4">本当にこの記録を削除してもよろしいですか？</p>
-
-        <p className="text-gray-700">
-          <strong>食事カテゴリ:</strong> <span className="font-mono font-bold text-gray-800">{getCategoryName(record.category_id)}</span>
-        </p>
-        <p className="text-gray-700">
-          <strong>開始時刻:</strong> <span className="font-mono font-bold text-gray-800">{formatToLocalDate(record.start_time)}{" "}
-          {formatToLocalTime(record.start_time)}</span>
-        </p>
-        <p className="text-gray-700">
-          <strong>終了時刻:</strong> <span className="font-mono font-bold text-gray-800">{formatToLocalDate(record.end_time)}{" "}
-          {formatToLocalTime(record.end_time)}</span>
+        <p className="text-gray-700 mb-4">
+          本当にこの記録を削除してもよろしいですか？
         </p>
 
-        <div className="mt-4 flex justify-end space-x-2">
+        <div className="p-4 bg-brand-background rounded-lg shadow-sm">
+          <p className="text-gray-700">
+            <strong>食事カテゴリ:</strong>{" "}
+            <span className="text-brand-primary font-mono font-semibold">
+              {getCategoryName(record.category_id)}
+            </span>
+          </p>
+          <p className="text-gray-700">
+            <strong>開始時刻:</strong>{" "}
+            <span className="text-brand-primary font-mono font-semibold">
+              {formatToLocalDate(record.start_time)}{" "}
+              {formatToLocalTime(record.start_time)}
+            </span>
+          </p>
+          <p className="text-gray-700">
+            <strong>終了時刻:</strong>{" "}
+            <span className="text-brand-primary font-mono font-semibold">
+              {formatToLocalDate(record.end_time)}{" "}
+              {formatToLocalTime(record.end_time)}
+            </span>
+          </p>
+        </div>
+        <div className="mt-6 flex justify-end space-x-3">
           <button
             onClick={onClose}
             className="bg-brand-background text-brand-primary
-          border border-brand-primary hover:bg-white py-2 px-4 rounded  focus:outline-none
+          border border-brand-primary hover:bg-white py-2 px-4 rounded-lg focus:outline-none
           focus:shadow-outline focus:shadow-outline"
           >
             キャンセル
           </button>
           <button
             onClick={handleDelete}
-            className="bg-brand-secondary text-white py-2 px-4 rounded hover:bg-brand-accent"
+            className="bg-brand-secondary text-white py-2 px-4 rounded-lg hover:bg-brand-accent"
           >
             削除
           </button>

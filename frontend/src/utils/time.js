@@ -40,13 +40,9 @@ export const formatToLocalTime = (isoString) => {
     const date = new Date(isoString);
     if (isNaN(date.getTime())) throw new Error("Invalid date");
 
-    const jstHours = (date.getUTCHours() + 9) % 24;
-    const jstMinutes = date.getUTCMinutes();
-
-    return `${String(jstHours).padStart(2, "0")}:${String(jstMinutes).padStart(
-      2,
-      "0"
-    )}`;
+    return `${String(date.getHours()).padStart(2, "0")}:${String(
+      date.getMinutes()
+    ).padStart(2, "0")}`;
   } catch (error) {
     console.error("Error formatting time:", error);
     return "記録なし";

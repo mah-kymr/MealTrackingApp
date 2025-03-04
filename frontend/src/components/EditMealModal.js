@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 
-// JST に変換する関数
 const formatDateTimeLocal = (isoString) => {
   const date = new Date(isoString);
-  date.setHours(date.getHours() + 9); // UTC → JST に変換
+  date.setHours(date.getHours() + 9); // 🔥 JSTに変換
   return date.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm 形式
 };
 
@@ -15,16 +14,9 @@ const EditMealModal = ({ record, categories, onClose, onUpdate }) => {
   const [categoryId, setCategoryId] = useState(record.category_id);
 
   const handleSubmit = async () => {
-    // 送信時には JST から UTC に戻す
-    const startUTC = new Date(startTime);
-    startUTC.setHours(startUTC.getHours() - 9); // JST → UTC に戻す
-
-    const endUTC = new Date(endTime);
-    endUTC.setHours(endUTC.getHours() - 9); // JST → UTC に戻す
-
     await onUpdate(record.record_id, {
-      start_time: startUTC.toISOString(),
-      end_time: endUTC.toISOString(),
+      start_time: new Date(startTime).toISOString(), // 9時間引かない
+      end_time: new Date(endTime).toISOString(),
       category_id: categoryId,
     });
     onClose();
@@ -37,27 +29,33 @@ const EditMealModal = ({ record, categories, onClose, onUpdate }) => {
           記録の編集
         </h2>
 
-        <label>開始時間:</label>
+        <label className="block text-gray-700 font-semibold mb-2">
+          開始時間:
+        </label>
         <input
           type="datetime-local"
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-3 border border-brand-primary rounded-lg bg-brand-background text-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-accent shadow-sm"
         />
 
-        <label>終了時間:</label>
+        <label className="block text-gray-700 font-semibold mt-4 mb-2">
+          終了時間:
+        </label>
         <input
           type="datetime-local"
           value={endTime}
           onChange={(e) => setEndTime(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-3 border border-brand-primary rounded-lg bg-brand-background text-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-accent shadow-sm"
         />
 
-        <label>食事カテゴリ:</label>
+        <label className="block text-gray-700 font-semibold mt-4 mb-2">
+          食事カテゴリ:
+        </label>
         <select
           value={categoryId}
           onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-3 border border-brand-primary rounded-lg bg-brand-background text-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-accent"
         >
           {categories.map((c) => (
             <option key={c.category_id} value={c.category_id}>
@@ -66,18 +64,18 @@ const EditMealModal = ({ record, categories, onClose, onUpdate }) => {
           ))}
         </select>
 
-        <div className="mt-4 flex justify-end space-x-2">
+        <div className="mt-6 flex justify-end space-x-3">
           <button
             onClick={onClose}
             className="bg-brand-background text-brand-primary
-          border border-brand-primary hover:bg-white py-2 px-4 rounded  focus:outline-none
+          border border-brand-primary hover:bg-white py-2 px-4 rounded-lg focus:outline-none
           focus:shadow-outline focus:shadow-outline"
           >
             キャンセル
           </button>
           <button
             onClick={handleSubmit}
-            className="bg-brand-secondary text-white py-2 px-4 rounded hover:bg-brand-accent"
+            className="bg-brand-secondary text-white py-2 px-4 rounded-lg hover:bg-brand-accent"
           >
             更新
           </button>
