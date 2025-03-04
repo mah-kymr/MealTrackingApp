@@ -33,7 +33,9 @@ const EditMealModal = ({ record, categories, onClose, onUpdate }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-96">
-        <h2 className="text-xl font-bold mb-4">記録の編集</h2>
+        <h2 className="text-xl font-semibold text-brand-primary mb-4">
+          記録の編集
+        </h2>
 
         <label>開始時間:</label>
         <input
@@ -67,13 +69,15 @@ const EditMealModal = ({ record, categories, onClose, onUpdate }) => {
         <div className="mt-4 flex justify-end space-x-2">
           <button
             onClick={onClose}
-            className="bg-gray-400 text-white p-2 rounded"
+            className="bg-brand-background text-brand-primary
+          border border-brand-primary hover:bg-white py-2 px-4 rounded  focus:outline-none
+          focus:shadow-outline focus:shadow-outline"
           >
             キャンセル
           </button>
           <button
             onClick={handleSubmit}
-            className="bg-blue-500 text-white p-2 rounded"
+            className="bg-brand-secondary text-white py-2 px-4 rounded hover:bg-brand-accent"
           >
             更新
           </button>

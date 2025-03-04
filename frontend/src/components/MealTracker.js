@@ -121,15 +121,15 @@ const MealTracker = ({ onAddRecord }) => {
       <div className="flex space-x-4 items-center">
         <button
           onClick={handleStart}
-          className="bg-brand-secondary text-white font-bold py-2 px-4 rounded hover:bg-brand-accent"
+          className="bg-brand-background text-brand-primary
+          border border-brand-primary hover:bg-white font-bold py-2 px-4 rounded  focus:outline-none
+          focus:shadow-outline focus:shadow-outline"
         >
           開始
         </button>
         <button
           onClick={handleEnd}
-          className="bg-brand-background text-brand-primary
-          border border-brand-primary hover:bg-white font-bold py-2 px-4 rounded  focus:outline-none
-          focus:shadow-outline focus:shadow-outline"
+          className="bg-brand-secondary text-white font-bold py-2 px-4 rounded hover:bg-brand-accent"
           disabled={!startTime}
         >
           終了

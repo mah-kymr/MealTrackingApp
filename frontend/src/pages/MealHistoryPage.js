@@ -41,6 +41,7 @@ const MealHistoryPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       const data = await fetchMealCategories();
+      console.log("🟢 [MealHistoryPage] Fetched categories:", data);
       setCategories(data);
     };
     fetchCategories();

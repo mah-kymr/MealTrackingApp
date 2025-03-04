@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { formatToLocalDate, formatToLocalTime } from "../utils/time";
 import EditMealModal from "./EditMealModal"; // 編集用モーダルをインポート
+import DeleteMealModal from "./DeleteMealModal"; // 削除用モーダルをインポート
 
 const MealHistoryList = ({ records, categories, onUpdate, onDelete }) => {
   const [editRecord, setEditRecord] = useState(null); // 編集対象の記録
+  const [deleteRecord, setDeleteRecord] = useState(null); // 削除対象の記録
 
   if (!records || records.length === 0) {
     return <p className="text-gray-500">記録がありません</p>;
@@ -13,20 +15,6 @@ const MealHistoryList = ({ records, categories, onUpdate, onDelete }) => {
   const getCategoryName = (category_id) => {
     const category = categories.find((c) => c.category_id === category_id);
     return category ? category.category_name : "不明";
-  };
-
-  const handleEdit = (record) => {
-    setEditRecord(record); // 編集対象を設定
-  };
-
-  const handleDelete = async (record_id) => {
-    if (typeof onDelete !== "function") {
-      console.error("❌ onDelete is not a function. Check the props.");
-      return;
-    }
-    if (window.confirm("この記録を削除してもよろしいですか？")) {
-      await onDelete(record_id);
-    }
   };
 
   return (
@@ -137,14 +125,16 @@ const MealHistoryList = ({ records, categories, onUpdate, onDelete }) => {
             {/* 編集・削除ボタン */}
             <div className="mt-4 flex space-x-4">
               <button
-                onClick={() => handleEdit(record)}
-                className="bg-blue-500 text-white p-2 rounded"
+                onClick={() => setEditRecord(record)}
+                className="bg-brand-background text-brand-primary
+          border border-brand-primary hover:bg-white py-2 px-4 rounded  focus:outline-none
+          focus:shadow-outline focus:shadow-outline"
               >
                 編集
               </button>
               <button
-                onClick={() => handleDelete(record.record_id)}
-                className="bg-red-500 text-white p-2 rounded"
+                onClick={() => setDeleteRecord(record)}
+                className="bg-brand-secondary text-white py-2 px-4 rounded hover:bg-brand-accent"
               >
                 削除
               </button>
@@ -160,6 +150,16 @@ const MealHistoryList = ({ records, categories, onUpdate, onDelete }) => {
           categories={categories}
           onClose={() => setEditRecord(null)}
           onUpdate={onUpdate}
+        />
+      )}
+
+      {/* 削除モーダル */}
+      {deleteRecord && (
+        <DeleteMealModal
+          record={deleteRecord}
+          categories={categories}
+          onClose={() => setDeleteRecord(null)}
+          onDelete={onDelete}
         />
       )}
     </div>
