@@ -14,13 +14,18 @@ const EditMealModal = ({ record, categories, onClose, onUpdate }) => {
   const [categoryId, setCategoryId] = useState(record.category_id);
 
   const handleSubmit = async () => {
-    await onUpdate(record.record_id, {
-      start_time: new Date(startTime).toISOString(), // 9時間引かない
+    const updatedData = {
+      start_time: new Date(startTime).toISOString(),
       end_time: new Date(endTime).toISOString(),
       category_id: categoryId,
-    });
+    };
+  
+    console.log("Updating meal record:", updatedData); // 🔍 確認
+  
+    await onUpdate(record.record_id, updatedData);
     onClose();
   };
+  
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

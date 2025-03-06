@@ -8,6 +8,7 @@ import MealRecordList from "../components/MealRecordList";
 const DashboardPage = () => {
   // ユーザー情報とローディング状態を管理
   const { records, addRecord, categories } = useContext(MealContext);
+  console.log("🟢 Fetched records from MealContext:", records);
   const { userData, isLoading, error } = useUserProfile();
 
   // ページ遷移のためのナビゲーションフック
@@ -103,6 +104,7 @@ const DashboardPage = () => {
             />
 
             {/* 記録結果区画 */}
+            {console.log("📌 Dashboard records before rendering:", records)}
             <MealRecordList records={records} categories={categories || []} />
           </div>
         </div>

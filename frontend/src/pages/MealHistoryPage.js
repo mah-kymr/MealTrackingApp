@@ -25,6 +25,7 @@ const MealHistoryPage = () => {
         const result = await response.json();
 
         if (response.ok) {
+          console.log("Meal history response:", result.data); // 🔍 確認
           setRecords(result.data);
         } else {
           console.error("Failed to fetch meal history:", result.message);

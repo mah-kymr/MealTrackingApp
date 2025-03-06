@@ -77,21 +77,16 @@ export const MealProvider = ({ children }) => {
       return;
     }
 
+    console.log("Adding new record:", newRecord); // 🔍 確認
+
     setRecords((prevRecords) => [
       {
         ...newRecord,
         start_time: new Date(newRecord.start_time).toISOString(),
         end_time: new Date(newRecord.end_time).toISOString(),
-        category_name: getCategoryName(newRecord.category_id),
       },
       ...prevRecords,
     ]);
-  };
-
-  // **category_id から category_name を取得**
-  const getCategoryName = (category_id) => {
-    const category = categories?.find((c) => c.category_id === category_id);
-    return category ? category.category_name : "不明";
   };
 
   return (

@@ -32,6 +32,10 @@ export const formatTime = (isoString) => {
     "0"
   )}`;
 };
+export const formatTimeDuration = (minutes) => {
+  if (!minutes || isNaN(minutes)) return "データなし";
+  return `${Math.floor(minutes / 60)}時間 ${minutes % 60}分`;
+};
 
 export const formatToLocalTime = (isoString) => {
   if (!isoString || isoString === "null") return "記録なし";
