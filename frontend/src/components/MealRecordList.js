@@ -76,9 +76,9 @@ const MealRecordList = ({ records }) => {
                 <span className="font-semibold text-gray-600">食事間隔: </span>
                 <span className="font-mono font-bold text-gray-800">
                   {record.interval && !isNaN(record.interval)
-                    ? `${Math.floor(record.interval / 60)}時間 ${
+                    ? `${Math.floor(record.interval / 60)}時間 ${Math.round(
                         record.interval % 60
-                      }分`
+                      )}分`
                     : "データなし"}
                 </span>
               </p>
