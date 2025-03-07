@@ -78,7 +78,7 @@ const MealHistoryList = ({ records, categories, onUpdate, onDelete }) => {
             <p className="text-lg font-bold text-gray-800 mb-4">
               <strong>記録日:</strong>{" "}
               <span className="font-mono font-bold text-gray-800">
-                {formatToLocalDate(record.start_time)}
+              {record.record_date}
               </span>
             </p>
             <p>

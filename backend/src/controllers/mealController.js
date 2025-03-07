@@ -123,34 +123,47 @@ const recordMeal = async (req, res) => {
 };
 
 const getMealHistory = async (req, res) => {
-  const userId = req.user.user_id;
-  const { filterType } = req.query; // "daily", "weekly", "monthly"
-
-  let query = `SELECT * FROM meal_records WHERE user_id = $1`;
-  let params = [userId];
-
-  if (filterType === "daily") {
-    query += ` AND start_time >= NOW() - INTERVAL '1 day'`;
-  } else if (filterType === "weekly") {
-    query += ` AND start_time >= NOW() - INTERVAL '7 days'`;
-  } else if (filterType === "monthly") {
-    query += ` AND start_time >= NOW() - INTERVAL '1 month'`;
-  }
-
-  query += ` ORDER BY start_time DESC`;
-
   try {
-    const result = await pool.query(query, params);
-    res.status(200).json({
-      status: "success",
-      data: result.rows,
-    });
+    const { filterType } = req.query;
+    let query = `
+      SELECT 
+        m1.record_id, 
+        m1.user_id, 
+        m1.category_id, 
+        m1.start_time, 
+        m1.end_time, 
+        FLOOR(EXTRACT(EPOCH FROM (m1.end_time - m1.start_time)) / 60) AS duration_minutes,
+        m1.created_at,
+        COALESCE(
+          FLOOR(EXTRACT(EPOCH FROM (m1.start_time - (
+            SELECT m2.end_time FROM meal_records m2
+            WHERE m2.user_id = m1.user_id 
+            AND m2.start_time < m1.start_time
+            ORDER BY m2.start_time DESC
+            LIMIT 1
+          ))) / 60), NULL
+        ) AS interval_minutes
+      FROM meal_records m1
+      WHERE m1.user_id = $1
+    `;
+
+    if (filterType === "daily") {
+      query += " AND m1.start_time >= CURRENT_DATE";
+    } else if (filterType === "weekly") {
+      query += " AND m1.start_time >= CURRENT_DATE - INTERVAL '7 days'";
+    } else if (filterType === "monthly") {
+      query += " AND m1.start_time >= CURRENT_DATE - INTERVAL '30 days'";
+    }
+
+    query += " ORDER BY m1.start_time DESC";
+
+    const { rows } = await pool.query(query, [req.user.user_id]);
+    console.log("📌 API `/history` のレスポンス:", rows);
+
+    res.json({ status: "success", data: rows });
   } catch (error) {
-    console.error("Database error:", error);
-    res.status(500).json({
-      status: "error",
-      message: "サーバーエラーが発生しました。",
-    });
+    console.error("❌ Error fetching meal history:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -205,30 +218,53 @@ const deleteMealRecord = async (req, res) => {
   const { record_id } = req.params;
 
   try {
-    const result = await pool.query(
-      `DELETE FROM meal_records WHERE record_id = $1 
-       AND user_id = $2 AND start_time >= NOW() - INTERVAL '30 days'
-       RETURNING *`,
-      [record_id, req.user.user_id]
+    // 🔵 削除対象の記録を取得
+    const { rows } = await pool.query(
+      "SELECT user_id, start_time FROM meal_records WHERE record_id = $1",
+      [record_id]
     );
-
-    if (result.rowCount === 0) {
-      return res
-        .status(404)
-        .json({ status: "error", message: "記録が見つかりません" });
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Record not found" });
     }
 
-    // バッチ更新を実行
-    await updateMealIntervals(req.user.user_id);
+    const { user_id, start_time } = rows[0];
 
-    res
-      .status(200)
-      .json({ status: "success", message: "記録が削除されました" });
+    // 🔵 記録を削除
+    await pool.query("DELETE FROM meal_records WHERE record_id = $1", [
+      record_id,
+    ]);
+
+    // 🔵 削除後、前後の記録の `interval_minutes` を再計算
+    await pool.query(
+      `
+      WITH prev AS (
+        SELECT record_id, end_time FROM meal_records 
+        WHERE user_id = $1 AND start_time < $2 
+        ORDER BY start_time DESC LIMIT 1
+      ),
+      next AS (
+        SELECT record_id, start_time FROM meal_records 
+        WHERE user_id = $1 AND start_time > $2 
+        ORDER BY start_time ASC LIMIT 1
+      )
+      UPDATE meal_records m
+      SET interval_minutes = COALESCE(
+        EXTRACT(EPOCH FROM (m.start_time - prev.end_time)) / 60, 
+        EXTRACT(EPOCH FROM (next.start_time - m.end_time)) / 60
+      )
+      FROM prev, next
+      WHERE m.record_id IN (prev.record_id, next.record_id)
+    `,
+      [user_id, start_time]
+    );
+
+    res.json({
+      status: "success",
+      message: "Meal record deleted and intervals updated",
+    });
   } catch (error) {
     console.error("❌ Error deleting meal record:", error);
-    res
-      .status(500)
-      .json({ status: "error", message: "サーバーエラーが発生しました" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 

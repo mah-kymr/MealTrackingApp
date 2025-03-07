@@ -19,13 +19,18 @@ const EditMealModal = ({ record, categories, onClose, onUpdate }) => {
       end_time: new Date(endTime).toISOString(),
       category_id: categoryId,
     };
-  
+
     console.log("Updating meal record:", updatedData); // 🔍 確認
-  
-    await onUpdate(record.record_id, updatedData);
+
+    try {
+      await onUpdate(record.record_id, updatedData);
+      console.log("✅ 更新成功:", updatedData);
+    } catch (error) {
+      console.error("❌ 更新エラー:", error);
+    }
+
     onClose();
   };
-  
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

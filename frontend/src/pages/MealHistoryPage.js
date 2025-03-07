@@ -1,42 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import HistoryHeader from "../components/HistoryHeader";
 import MealHistoryList from "../components/MealHistoryList";
 import { fetchMealCategories } from "../services/meal";
+import { MealContext } from "../context/MealContext";
 
 const MealHistoryPage = () => {
-  const [records, setRecords] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [filter, setFilter] = useState("daily"); // フィルターの初期値は「日別」
+  const [filter, setFilter] = useState("monthly"); // フィルターの初期値は「日別」
   const navigate = useNavigate();
+  const { records, setRecords, fetchMealRecords } = useContext(MealContext);
 
-  // 食事履歴を取得
+  // **fetchMealRecords() を useCallback でメモ化**
+  const fetchRecordsWithFilter = useCallback(() => {
+    fetchMealRecords(filter);
+  }, [fetchMealRecords, filter]); // 🔵 `fetchMealRecords` と `filter` を依存配列に追加
+
+  // **初回データ取得 & フィルター変更時**
   useEffect(() => {
-    const fetchMealHistory = async () => {
-      try {
-        const response = await fetch(
-          `/api/v1/meal/history?filterType=${filter}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const result = await response.json();
-
-        if (response.ok) {
-          console.log("Meal history response:", result.data); // 🔍 確認
-          setRecords(result.data);
-        } else {
-          console.error("Failed to fetch meal history:", result.message);
-        }
-      } catch (error) {
-        console.error("Error fetching meal history:", error);
-      }
-    };
-
-    fetchMealHistory();
-  }, [filter]); // フィルターが変更されたら再取得
+    fetchMealRecords(filter); // 🔵 `filterType` を適用
+  }, [filter]); // 🔵 `filter` の変更時のみ再取得
 
   // カテゴリを取得
   useEffect(() => {
@@ -51,6 +34,8 @@ const MealHistoryPage = () => {
   // 記録を削除する
   const handleDeleteRecord = async (record_id) => {
     try {
+      console.log(`🗑️ Deleting meal record: ${record_id}`);
+
       const response = await fetch(`/api/v1/meal/${record_id}`, {
         method: "DELETE",
         headers: {
@@ -62,17 +47,25 @@ const MealHistoryPage = () => {
         throw new Error("Failed to delete record");
       }
 
+      console.log("✅ 削除完了！最新データを取得...");
+
+      // 🔵 1. まずAPIの成功を確認してから `setRecords()` を実行
       setRecords((prevRecords) =>
         prevRecords.filter((r) => r.record_id !== record_id)
       );
+
+      // 🔵 2. 現在の `filter` を考慮して最新データを取得
+      await fetchMealRecords(filter);
     } catch (error) {
-      console.error("Error deleting meal record:", error);
+      console.error("❌ Error deleting meal record:", error);
     }
   };
 
   // 記録を更新する
   const handleUpdateRecord = async (record_id, updatedData) => {
     try {
+      console.log(`✏️ Updating meal record: ${record_id}`);
+
       const response = await fetch(`/api/v1/meal/${record_id}`, {
         method: "PUT",
         headers: {
@@ -87,13 +80,19 @@ const MealHistoryPage = () => {
       }
 
       const updatedRecord = await response.json();
+      console.log("✅ 更新完了！即時反映 & 最新データを取得...");
+
+      // 🔵 1. まずフロントエンドの state を即時更新
       setRecords((prevRecords) =>
         prevRecords.map((record) =>
           record.record_id === record_id ? updatedRecord.data : record
         )
       );
+
+      // 🔵 2. 現在の `filter` に応じて最新データを取得
+      await fetchMealRecords(filter);
     } catch (error) {
-      console.error("Error updating meal record:", error);
+      console.error("❌ Error updating meal record:", error);
     }
   };
 
