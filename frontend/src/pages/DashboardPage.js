@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { MealContext } from "../context/MealContext";
@@ -7,12 +7,20 @@ import MealRecordList from "../components/MealRecordList";
 
 const DashboardPage = () => {
   // ユーザー情報とローディング状態を管理
-  const { records, addRecord, categories } = useContext(MealContext);
+  const { records, addRecord, categories, fetchMealRecords } =
+    useContext(MealContext);
   console.log("🟢 Fetched records from MealContext:", records);
   const { userData, isLoading, error } = useUserProfile();
 
   // ページ遷移のためのナビゲーションフック
   const navigate = useNavigate();
+
+  // 初めから「今日の記録のみ」取得
+  useEffect(() => {
+    fetchMealRecords("daily");
+  }, []);
+
+  console.log("📅 今日の記録:", records);
 
   const handleLogout = () => {
     localStorage.removeItem("token");

@@ -7,7 +7,7 @@ export const MealContext = createContext();
 // プロバイダコンポーネント
 export const MealProvider = ({ children }) => {
   const [records, setRecords] = useState([]);
-  const [categories, setCategories] = useState(null); // **修正: null 初期化でローディングを表現**
+  const [categories, setCategories] = useState([]);  // 初期値を空配列に変更
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
