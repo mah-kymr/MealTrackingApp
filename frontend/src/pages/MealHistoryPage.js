@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import HistoryHeader from "../components/HistoryHeader";
 import MealHistoryList from "../components/MealHistoryList";
 import { fetchMealCategories } from "../services/meal";
+import MealCalendar from "../components/MealCalendar";
 import { MealContext } from "../context/MealContext";
 
 const MealHistoryPage = () => {
   const [categories, setCategories] = useState([]);
-  const [filter, setFilter] = useState("monthly"); // フィルターの初期値は「日別」
+  const [filter, setFilter] = useState("monthly");
   const navigate = useNavigate();
   const { records, setRecords, fetchMealRecords } = useContext(MealContext);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   // **fetchMealRecords() を useCallback でメモ化**
   const fetchRecordsWithFilter = useCallback(() => {
@@ -18,8 +20,8 @@ const MealHistoryPage = () => {
 
   // **初回データ取得 & フィルター変更時**
   useEffect(() => {
-    fetchMealRecords(filter); // 🔵 `filterType` を適用
-  }, [filter]); // 🔵 `filter` の変更時のみ再取得
+    fetchMealRecords(filter); // 🔵 filterType を適用
+  }, [filter]); // 🔵 filter の変更時のみ再取得
 
   // カテゴリを取得
   useEffect(() => {
@@ -96,6 +98,33 @@ const MealHistoryPage = () => {
     }
   };
 
+  const handleSelectDate = (dateString) => {
+    const date = new Date(dateString);
+    const jstDate = date
+      .toLocaleDateString("ja-JP", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+      .replace(/\//g, "-"); // ✅ `YYYY-MM-DD` に変換
+    console.log("🟡 修正後の selectedDate:", jstDate);
+    setSelectedDate(jstDate);
+  };
+
+  // ✅ `start_time` も JST で統一
+  const filteredRecords = selectedDate
+    ? records.filter((record) => {
+        const recordDate = new Date(record.start_time)
+          .toLocaleDateString("ja-JP", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })
+          .replace(/\//g, "-"); // ✅ `YYYY-MM-DD` に統一
+        return recordDate === selectedDate;
+      })
+    : records;
+
   return (
     <div className="min-h-screen bg-brand-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
@@ -104,6 +133,9 @@ const MealHistoryPage = () => {
 
         {/* メインコンテンツ */}
         <div className="p-6 space-y-6">
+          {/* カレンダー */}
+          <MealCalendar onSelectDate={setSelectedDate} />
+
           {/* フィルターセレクター */}
           <div className="bg-white rounded-lg p-6 shadow-md space-y-4">
             <label className="text-xl font-semibold text-brand-primary mb-6">
@@ -126,7 +158,7 @@ const MealHistoryPage = () => {
               履歴一覧
             </label>
             <MealHistoryList
-              records={records}
+              records={filteredRecords}
               categories={categories}
               onUpdate={handleUpdateRecord}
               onDelete={handleDeleteRecord}
