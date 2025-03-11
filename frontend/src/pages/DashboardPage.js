@@ -12,6 +12,11 @@ const DashboardPage = () => {
   console.log("🟢 Fetched records from MealContext:", records);
   const { userData, isLoading, error } = useUserProfile();
 
+  // ✅ `useEffect()` でデータ取得を実行
+useEffect(() => {
+  console.log("📌 `DashboardPage` で `MealContext.records` を取得:", records);
+}, [records]);
+
   // ページ遷移のためのナビゲーションフック
   const navigate = useNavigate();
 

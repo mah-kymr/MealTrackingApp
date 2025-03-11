@@ -124,7 +124,12 @@ const recordMeal = async (req, res) => {
 
 const getMealHistory = async (req, res) => {
   try {
+    console.log(
+      "📌 `getMealHistory(${req.query.filterType})` にリクエストを受信"
+    );
+
     const { filterType } = req.query;
+
     let query = `
       SELECT 
         m1.record_id, 
@@ -148,7 +153,7 @@ const getMealHistory = async (req, res) => {
     `;
 
     if (filterType === "daily") {
-      query += " AND m1.start_time >= CURRENT_DATE";
+      query += " AND DATE(m1.start_time) = CURRENT_DATE"; // ✅ 当日データのみ取得
     } else if (filterType === "weekly") {
       query += " AND m1.start_time >= CURRENT_DATE - INTERVAL '7 days'";
     } else if (filterType === "monthly") {
@@ -157,13 +162,16 @@ const getMealHistory = async (req, res) => {
 
     query += " ORDER BY m1.start_time DESC";
 
+    console.log(`🔍 SQL クエリ実行 (filterType=${filterType}):`, query);
+
     const { rows } = await pool.query(query, [req.user.user_id]);
-    console.log("📌 API `/history` のレスポンス:", rows);
+
+    console.log(`🟢 getMealHistory(${filterType}) のデータ:`, rows);
 
     res.json({ status: "success", data: rows });
   } catch (error) {
-    console.error("❌ Error fetching meal history:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error(`❌ getMealHistory(${filterType}) エラー:`, error);
+    res.status(500).json({ error: "食事履歴の取得に失敗しました" });
   }
 };
 

@@ -12,6 +12,7 @@ import CompletePage from "./pages/CompletePage";
 import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import MealHistoryPage from "./pages/MealHistoryPage";
+import MealStatsPage from "./pages/MealStatsPage";
 
 // 認証済みかどうかをチェックする関数
 const PrivateRoute = ({ children }) => {
@@ -53,6 +54,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <MealHistoryPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/stats"
+              element={
+                <PrivateRoute>
+                  <MealStatsPage />
                 </PrivateRoute>
               }
             />

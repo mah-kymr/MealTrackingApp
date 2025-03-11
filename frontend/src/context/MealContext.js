@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
-import { fetchMealCategories } from "../services/meal";
+import { fetchMealCategories, fetchMealRecords } from "../services/meal";
 
 // Contextを作成
 export const MealContext = createContext();
@@ -7,7 +7,7 @@ export const MealContext = createContext();
 // プロバイダコンポーネント
 export const MealProvider = ({ children }) => {
   const [records, setRecords] = useState([]);
-  const [categories, setCategories] = useState([]);  // 初期値を空配列に変更
+  const [categories, setCategories] = useState([]); // 初期値を空配列に変更
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
@@ -109,15 +109,20 @@ export const MealProvider = ({ children }) => {
         interval_minutes:
           record.interval_minutes !== null
             ? record.interval_minutes
-            : "データなし", // 🔵 データなしの場合の処理
+            : "データなし",
       }));
 
       setRecords(recordsWithJST);
+
+      // ✅ `setRecords()` の後にログを追加
+      console.log(
+        `🟢 fetchMealRecords(${filter}) - 'MealContext' 内の 'records':`,
+        recordsWithJST
+      );
     } catch (error) {
-      console.error("❌ Error fetching meal history:", error);
+      console.error(`❌ fetchMealRecords(${filter}) エラー:`, error);
     }
   };
-
   // **食事記録を追加**
   const addRecord = (newRecord) => {
     if (!newRecord.start_time || !newRecord.end_time) {
@@ -160,6 +165,14 @@ export const MealProvider = ({ children }) => {
       console.error("❌ Error deleting meal record:", error);
     }
   };
+
+  // **食事記録の初回取得**
+  useEffect(() => {
+    console.log(
+      "📌 `MealContext` の `useEffect()` を実行: fetchMealRecords('monthly')"
+    );
+    fetchMealRecords("monthly");
+  }, []); // 🔵 空の依存配列でコンポーネントの初回レンダリング時のみ実行
 
   return (
     <MealContext.Provider
